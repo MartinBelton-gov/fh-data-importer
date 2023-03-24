@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace BuckingshireImporter.Services;
+﻿namespace BuckingshireImporter.Services;
 
 internal class BuckinghapshireService
 {
@@ -42,7 +36,7 @@ internal class Content
     public Meta[] meta { get; set; } = default!;
     public Organisation organisation { get; set; } = default!;
     public Taxonomy[] taxonomies { get; set; } = default!;
-    public RegularSchedules[] regular_schedules { get; set; } = default!;
+    public RegularSchedule[] regular_schedules { get; set; } = default!;
     public CostOptions[] cost_options { get; set; } = default!;
     public Link[] links { get; set; } = default!;
     public object[] send_needs { get; set; } = default!;
@@ -128,7 +122,7 @@ internal class Taxonomy
     public int? parent_id { get; set; } = default!;
 }
 
-internal class RegularSchedules
+internal class RegularSchedule
 {
     public int id { get; set; } = default!;
     public string weekday { get; set; } = default!;

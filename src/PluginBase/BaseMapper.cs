@@ -71,10 +71,13 @@ public class BaseMapper
         if (localAuthority == null)
         {
             var id = await _organisationClientService.CreateOrganisation(_parentLA);
-            _dictOrganisations[$"{_parentLA.AdminAreaCode}{_parentLA.Name}"] = _parentLA;
+            if (id > 0)
+            {
+                _dictOrganisations[$"{_parentLA.AdminAreaCode}{_parentLA.Name}"] = _parentLA;
+            }
+            
         }
 
-        const OrganisationType organisationType = OrganisationType.VCFS;
         foreach (var organisation in organisations)
         {
             OrganisationWithServicesDto organisationWithServicesDto = new OrganisationWithServicesDto

@@ -7,7 +7,7 @@ namespace PluginBase
 {
     public interface IOrganisationClientService
     {
-        Task<PaginatedList<TaxonomyDto>> GetTaxonomyList(int pageNumber = 1, int pageSize = 10, TaxonomyType taxonomyType = TaxonomyType.NotSet);
+        Task<PaginatedList<TaxonomyDto>> GetTaxonomyList(int pageNumber = 1, int pageSize = 10, TaxonomyType taxonomyType = TaxonomyType.ServiceCategory);
         Task<long> CreateTaxonomy(TaxonomyDto taxonomy);
         Task<List<OrganisationDto>> GetListOrganisations();
         Task<OrganisationWithServicesDto> GetOrganisationById(string id);
