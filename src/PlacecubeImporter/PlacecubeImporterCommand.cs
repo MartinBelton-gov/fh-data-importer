@@ -11,7 +11,7 @@ public class PlacecubeImporterCommand : IDataInputCommand
     public string Name { get => "DataImporter"; }
     public string Description { get => "Imports Placecube Data."; }
 
-    public async Task<int> Execute(string arg)
+    public async Task<int> Execute(string arg, string testOnly)
     {
         var myProfile = new AutoMappingProfiles();
         var configuration = new MapperConfiguration(
@@ -55,13 +55,18 @@ public class PlacecubeImporterCommand : IDataInputCommand
 
         List<CommandItem> commandItems = new()
             {
-                //new CommandItem() { Name = "Pennine Lancashire", BaseUrl = "https://penninelancs.openplace.directory/o/ServiceDirectoryService/v2", AdminAreaCode = "E10000017", ParentOrganisation = pennineLancashire },
-                //new CommandItem() { Name = "North Lincolnshire Council", BaseUrl = "https://northlincs.openplace.directory/o/ServiceDirectoryService/v2", AdminAreaCode = "E06000013", ParentOrganisation = northLincCouncil },
-                new CommandItem() { Name = "Elmbridge Council", BaseUrl = "https://elmbridge.openplace.directory/o/ServiceDirectoryService/v2", AdminAreaCode = "E10000030", ParentOrganisation = elmbridgeCouncil }
+                new CommandItem() { Name = pennineLancashire.Name, BaseUrl = "https://penninelancs.openplace.directory/o/ServiceDirectoryService/v2", AdminAreaCode = "E10000017", ParentOrganisation = pennineLancashire },
+                new CommandItem() { Name = northLincCouncil.Name, BaseUrl = "https://northlincs.openplace.directory/o/ServiceDirectoryService/v2", AdminAreaCode = "E06000013", ParentOrganisation = northLincCouncil },
+                new CommandItem() { Name = elmbridgeCouncil.Name, BaseUrl = "https://elmbridge.openplace.directory/o/ServiceDirectoryService/v2", AdminAreaCode = "E10000030", ParentOrganisation = elmbridgeCouncil }
             };
 
         foreach (var commandItem in commandItems)
         {
+            if (!string.IsNullOrEmpty(testOnly) && testOnly != commandItem.Name)
+            {
+                continue;
+            }
+
             Console.WriteLine($"Starting {commandItem.Name} Mapper");
 #pragma warning disable S1075 // URIs should not be hardcoded
             IPlacecubeClientService placecubeClientService = new PlacecubeClientService(commandItem.BaseUrl);

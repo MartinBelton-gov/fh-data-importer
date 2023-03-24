@@ -6,12 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PlacecubeImporter;
 using PluginBase;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
 
 //https://thecodeblogger.com/2022/09/16/net-dependency-injection-one-interface-and-multiple-implementations/
 
@@ -49,12 +43,11 @@ namespace FamilyHubs.DataImporter
             logger.LogDebug("Starting application");
 
             IEnumerable<IDataInputCommand> services = serviceProvider.GetServices<IDataInputCommand>();
-
-            var placecude = services.FirstOrDefault(x => x.GetType() == typeof(PlacecubeImporterCommand));
             string servicedirectoryBaseUrl = Configuration["ApplicationServiceApi:ServiceDirectoryUrl"] ?? default!;
-            if (placecude != null && !string.IsNullOrEmpty(servicedirectoryBaseUrl))
+            string importerToTest = Configuration["ImporterToTest"] ?? default!;
+            foreach (var service in services)
             {
-                await placecude.Execute(servicedirectoryBaseUrl);
+                await service.Execute(servicedirectoryBaseUrl, importerToTest);
             }
         }
     }

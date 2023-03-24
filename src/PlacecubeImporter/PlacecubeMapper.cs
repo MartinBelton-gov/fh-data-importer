@@ -321,16 +321,16 @@ internal class PlacecubeMapper : BaseMapper
             listFundingDto = existingService.Fundings.ToList();
         }
 
-        foreach (Funding funding in fundings)
+        foreach (var source in fundings.Select(x => x.source))
         {
             var newFunding = new FundingDto
             {
-                Source = funding.source,
+                Source = source,
             };
 
             if (existingService != null)
             {
-                var existingItem = existingService.Fundings.FirstOrDefault(x => x.Source == funding.source);
+                var existingItem = existingService.Fundings.FirstOrDefault(x => x.Source == source);
                 if (existingItem != null)
                 {
                     listFundingDto.Add(existingItem);
@@ -362,7 +362,7 @@ internal class PlacecubeMapper : BaseMapper
                 ValidFrom = Helper.GetDateFromString(regularSchedule.valid_from),
                 ValidTo = Helper.GetDateFromString(regularSchedule.valid_to),
                 DtStart = regularSchedule.dtstart,
-                Freq = FrequencyType.NotSet, // regularSchedule.freq,
+                Freq = FrequencyType.NotSet,
                 Interval = regularSchedule.interval,
                 ByDay = regularSchedule.byday,
                 ByMonthDay = regularSchedule.bymonthday,
@@ -435,19 +435,22 @@ internal class PlacecubeMapper : BaseMapper
                 newHolidaySchedule.StartDate = endDate.Value;
             }
 
-
-            HolidayScheduleDto existingItme = listHolidayScheduleDto.FirstOrDefault(x => x.Closed == newHolidaySchedule.Closed
+            if (existingService != null)
+            {
+                HolidayScheduleDto existingItme = existingService.HolidaySchedules.FirstOrDefault(x => x.Closed == newHolidaySchedule.Closed
                                                 && x.OpensAt == newHolidaySchedule.OpensAt
                                                 && x.ClosesAt == newHolidaySchedule.ClosesAt
                                                 && x.LocationId == newHolidaySchedule.LocationId
                                                 && x.StartDate == newHolidaySchedule.StartDate
                                                 && x.EndDate == newHolidaySchedule.EndDate
                                                 ) ?? default!;
-            if (existingItme != null)
-            {
-                listHolidayScheduleDto.Add(existingItme);
-                continue;
+                if (existingItme != null)
+                {
+                    listHolidayScheduleDto.Add(existingItme);
+                    continue;
+                }
             }
+            
 
             listHolidayScheduleDto.Add(newHolidaySchedule);
         }
@@ -471,8 +474,6 @@ internal class PlacecubeMapper : BaseMapper
                 continue; 
             }
 
-            //long locationId = Helper.GetLongFromString(serviceAtLocation.location.id, _adminAreaCode);
-
             PhysicalAddresses? physicalAddress = null;
             if (serviceAtLocation != null && serviceAtLocation.location != null && serviceAtLocation.location.physical_addresses != null && serviceAtLocation.location.physical_addresses.Any())
             {
@@ -481,8 +482,6 @@ internal class PlacecubeMapper : BaseMapper
 
             var newLocation = new LocationDto
             {
-                //Id = locationId,
-                
                 LocationType = LocationType.NotSet,
                 Name = serviceAtLocation?.location?.name ?? default!,
                 Description = physicalAddress != null ? $"{physicalAddress.address_1} {physicalAddress.postal_code}" : null,
@@ -497,8 +496,8 @@ internal class PlacecubeMapper : BaseMapper
 
             if (serviceAtLocation != null)
             {
-                newLocation.RegularSchedules = GetRegularSchedules(serviceAtLocation.regular_schedule, existingService, null); // locationId);
-                newLocation.HolidaySchedules = GetHolidaySchedules(serviceAtLocation.holidayScheduleCollection, existingService, null); // locationId);
+                newLocation.RegularSchedules = GetRegularSchedules(serviceAtLocation.regular_schedule, existingService, null); 
+                newLocation.HolidaySchedules = GetHolidaySchedules(serviceAtLocation.holidayScheduleCollection, existingService, null);
             }
 
 
@@ -619,7 +618,11 @@ internal class PlacecubeMapper : BaseMapper
             if (!_dictTaxonomies.ContainsKey(taxonomyDto.Name.ToLower()))
             {
                 long result = await _organisationClientService.CreateTaxonomy(taxonomyDto);
-                _dictTaxonomies[taxonomyDto.Name.ToLower()] = taxonomyDto;
+                if (result > 0) 
+                {
+                    _dictTaxonomies[taxonomyDto.Name.ToLower()] = taxonomyDto;
+                }
+                
             }
 
             if (existingService != null) 
