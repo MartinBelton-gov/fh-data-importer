@@ -9,11 +9,8 @@ namespace PlacecubeImporter;
 internal class PlacecubeMapper : BaseMapper
 {
     private readonly IPlacecubeClientService _placecubeClientService;
-    
-    
+     
     public string Name => "Placecube Mapper";
-
-
 
     public PlacecubeMapper(IPlacecubeClientService placecubeClientService, IOrganisationClientService organisationClientService, IMapper mapper, string adminAreaCode, string key, OrganisationWithServicesDto parentLA)
         : base(organisationClientService, adminAreaCode, parentLA, key)
@@ -216,9 +213,8 @@ internal class PlacecubeMapper : BaseMapper
 
             if (existingService != null)
             {
-                var existingItem = existingService.Eligibilities.FirstOrDefault(x => x.EligibilityType == newEligibility.EligibilityType
-                             && x.MinimumAge == newEligibility.MinimumAge
-                             && x.MaximumAge == newEligibility.MaximumAge);
+                var existingItem = existingService.Eligibilities.FirstOrDefault(x => x.Equals(newEligibility));
+                
                 if (existingItem != null)
                 {
                     listEligibilityDto.Add(existingItem);
@@ -257,11 +253,8 @@ internal class PlacecubeMapper : BaseMapper
 
             if (existingService != null)
             {
-                var existingItem = existingService.CostOptions.FirstOrDefault(x => x.AmountDescription == newCostOption.AmountDescription
-                             && x.Amount == newCostOption.Amount
-                             && x.Option == newCostOption.Option
-                             && x.ValidFrom == newCostOption.ValidFrom
-                             && x.ValidTo == newCostOption.ValidTo);
+                var existingItem = existingService.CostOptions.FirstOrDefault(x => x.Equals(newCostOption));
+
                 if (existingItem != null)
                 {
                     listCostOptionDto.Add(existingItem);
@@ -286,10 +279,16 @@ internal class PlacecubeMapper : BaseMapper
         
         foreach (ServiceArea serviceArea in serviceAreas)
         {
+            var newServiceArea = new ServiceAreaDto
+            {
+                ServiceAreaName = serviceArea.service_area,
+                Extent = serviceArea.extent
+            };
+
             if (existingService != null)
             {
-                var existing = existingService.ServiceAreas.FirstOrDefault(x => x.ServiceAreaName == serviceArea.service_area
-                                                              && x.Extent == serviceArea.extent);
+                var existing = existingService.ServiceAreas.FirstOrDefault(x => x.Equals(newServiceArea));
+
                 if (existing != null)
                 {
                     listServiceAreaDto.Add(existing);
@@ -297,11 +296,7 @@ internal class PlacecubeMapper : BaseMapper
                 }
             }
 
-            listServiceAreaDto.Add(new ServiceAreaDto
-            {
-                ServiceAreaName = serviceArea.service_area,
-                Extent = serviceArea.extent
-            });
+            listServiceAreaDto.Add(newServiceArea);
         }
 
         return listServiceAreaDto;
@@ -372,20 +367,10 @@ internal class PlacecubeMapper : BaseMapper
             };
 
 
-            if (existingService != null)
+            if (existingService != null && existingService.RegularSchedules != null)
             {
-                RegularScheduleDto existingItem = listRegularScheduleDto.FirstOrDefault(x => x.OpensAt == regularScheduleItem.OpensAt
-                                               && x.ClosesAt == regularScheduleItem.ClosesAt
-                                               && x.ValidFrom == regularScheduleItem.ValidFrom
-                                               && x.ValidTo == regularScheduleItem.ValidTo
-                                               && x.DtStart == regularScheduleItem.DtStart
-                                               && x.Freq == regularScheduleItem.Freq
-                                               && x.Interval == regularScheduleItem.Interval
-                                               && x.ByDay == regularScheduleItem.ByDay
-                                               && x.ByMonthDay == regularScheduleItem.ByMonthDay
-                                               && x.Description == regularScheduleItem.Description
-                                               //&& x.LocationId == regularScheduleItem.LocationId
-                                               ) ?? default!;
+                RegularScheduleDto? existingItem = existingService.RegularSchedules.FirstOrDefault(x => x.Equals(regularScheduleItem));
+                
                 if (existingItem != null)
                 {
                     listRegularScheduleDto.Add(existingItem);
@@ -435,18 +420,13 @@ internal class PlacecubeMapper : BaseMapper
                 newHolidaySchedule.StartDate = endDate.Value;
             }
 
-            if (existingService != null)
+            if (existingService != null && existingService.HolidaySchedules != null)
             {
-                HolidayScheduleDto existingItme = existingService.HolidaySchedules.FirstOrDefault(x => x.Closed == newHolidaySchedule.Closed
-                                                && x.OpensAt == newHolidaySchedule.OpensAt
-                                                && x.ClosesAt == newHolidaySchedule.ClosesAt
-                                                && x.LocationId == newHolidaySchedule.LocationId
-                                                && x.StartDate == newHolidaySchedule.StartDate
-                                                && x.EndDate == newHolidaySchedule.EndDate
-                                                ) ?? default!;
-                if (existingItme != null)
+                HolidayScheduleDto? existingItem = existingService.HolidaySchedules.FirstOrDefault(x => x.Equals(newHolidaySchedule));
+
+                if (existingItem != null)
                 {
-                    listHolidayScheduleDto.Add(existingItme);
+                    listHolidayScheduleDto.Add(existingItem);
                     continue;
                 }
             }
@@ -500,17 +480,17 @@ internal class PlacecubeMapper : BaseMapper
                 newLocation.HolidaySchedules = GetHolidaySchedules(serviceAtLocation.holidayScheduleCollection, existingService, null);
             }
 
-
-            LocationDto existingItem = listLocationDto.FirstOrDefault(x => x.Name == newLocation.Name
-                                        && x.Description == newLocation.Description
-                                        && x.Latitude == newLocation.Latitude
-                                        && x.Longitude == newLocation.Longitude
-                                        ) ?? default!;
-            if (existingItem != null) 
+            if (existingService != null) 
             {
-                listLocationDto.Add(existingItem);
-                continue;
+                LocationDto? existingItem = existingService.Locations.FirstOrDefault(x => x.Equals(newLocation));
+
+                if (existingItem != null)
+                {
+                    listLocationDto.Add(existingItem);
+                    continue;
+                }
             }
+           
 
             listLocationDto.Add(newLocation);
         }
@@ -552,7 +532,8 @@ internal class PlacecubeMapper : BaseMapper
 
             if (existingService != null) 
             {
-                ContactDto existingItem = existingService.Contacts.FirstOrDefault(x => x.Name == newContact.Title && x.Telephone == newContact.Telephone) ?? default!;
+                ContactDto? existingItem = existingService.Contacts.FirstOrDefault(x => x.Equals(newContact));
+
                 if (existingItem != null)
                 {
                     list.Add(existingItem);
@@ -627,9 +608,8 @@ internal class PlacecubeMapper : BaseMapper
 
             if (existingService != null) 
             {
-                TaxonomyDto existing = existingService.Taxonomies.FirstOrDefault(x => x.Name.ToLower() == taxonomyDto.Name.ToLower()
-                                                                                && x.TaxonomyType == taxonomyDto.TaxonomyType) ?? default!;
-
+                TaxonomyDto? existing = existingService.Taxonomies.FirstOrDefault(x => x.Equals(taxonomyDto));
+                
                 if (existing != null)
                 {
                     listTaxonomyDto.Add(existing);

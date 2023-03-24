@@ -151,9 +151,7 @@ internal class BuckinghamshireMapper : BaseMapper
 
         if (existingService != null)
         {
-            var existingItem = existingService.Eligibilities.FirstOrDefault(x => x.EligibilityType == newEligibility.EligibilityType
-                         && x.MinimumAge == newEligibility.MinimumAge
-                         && x.MaximumAge == newEligibility.MaximumAge);
+            var existingItem = existingService.Eligibilities.FirstOrDefault(x => x.Equals(newEligibility));
             if (existingItem != null)
             {
                 listEligibilityDto.Add(existingItem);
@@ -190,11 +188,8 @@ internal class BuckinghamshireMapper : BaseMapper
 
             if (existingService != null)
             {
-                var existingItem = existingService.CostOptions.FirstOrDefault(x => x.AmountDescription == newCostOption.AmountDescription
-                             && x.Amount == newCostOption.Amount
-                             && x.Option == newCostOption.Option
-                             && x.ValidFrom == newCostOption.ValidFrom
-                             && x.ValidTo == newCostOption.ValidTo);
+                var existingItem = existingService.CostOptions.FirstOrDefault(x => x.Equals(newCostOption));
+
                 if (existingItem != null)
                 {
                     listCostOptionDto.Add(existingItem);
@@ -230,17 +225,8 @@ internal class BuckinghamshireMapper : BaseMapper
 
             if (existingService != null)
             {
-                RegularScheduleDto existingItem = listRegularScheduleDto.FirstOrDefault(x => x.OpensAt == regularScheduleItem.OpensAt
-                                               && x.ClosesAt == regularScheduleItem.ClosesAt
-                                               && x.ValidFrom == regularScheduleItem.ValidFrom
-                                               && x.ValidTo == regularScheduleItem.ValidTo
-                                               && x.DtStart == regularScheduleItem.DtStart
-                                               && x.Freq == regularScheduleItem.Freq
-                                               && x.Interval == regularScheduleItem.Interval
-                                               && x.ByDay == regularScheduleItem.ByDay
-                                               && x.ByMonthDay == regularScheduleItem.ByMonthDay
-                                               && x.Description == regularScheduleItem.Description
-                                               ) ?? default!;
+                RegularScheduleDto? existingItem = existingService.RegularSchedules.FirstOrDefault(x => x.Equals(regularScheduleItem));
+
                 if (existingItem != null)
                 {
                     listRegularScheduleDto.Add(existingItem);
@@ -276,7 +262,7 @@ internal class BuckinghamshireMapper : BaseMapper
 
             if (existingService != null)
             {
-                ContactDto existingItem = existingService.Contacts.FirstOrDefault(x => x.Name == newContact.Title && x.Telephone == newContact.Telephone && x.Email == newContact.Email) ?? default!;
+                ContactDto? existingItem = existingService.Contacts.FirstOrDefault(x => x.Equals(newContact));
                 if (existingItem != null)
                 {
                     list.Add(existingItem);
@@ -319,8 +305,7 @@ internal class BuckinghamshireMapper : BaseMapper
 
             if (existingService != null)
             {
-                TaxonomyDto existing = existingService.Taxonomies.FirstOrDefault(x => x.Name.ToLower() == taxonomyDto.Name.ToLower()
-                                                                                && x.TaxonomyType == taxonomyDto.TaxonomyType) ?? default!;
+                TaxonomyDto? existing = existingService.Taxonomies.FirstOrDefault(x => x.Equals(taxonomyDto));
 
                 if (existing != null)
                 {
