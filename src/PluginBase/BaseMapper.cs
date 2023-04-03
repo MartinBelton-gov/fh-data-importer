@@ -73,6 +73,7 @@ public class BaseMapper
             var id = await _organisationClientService.CreateOrganisation(_parentLA);
             if (id > 0)
             {
+                _parentLA.Id = id;
                 _dictOrganisations[$"{_parentLA.AdminAreaCode}{_parentLA.Name}"] = _parentLA;
             }
             

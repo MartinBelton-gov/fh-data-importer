@@ -15,6 +15,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FamilyHubs.DataImporter", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{44C1E5CE-EB1C-4500-AEDC-1461F3F4AF61}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SouthamptonImporter", "src\SouthamptonImporter\SouthamptonImporter.csproj", "{DDBB5E93-A913-4A34-8A17-D2FD9D7A0194}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,6 +39,10 @@ Global
 		{DBBD641C-0198-47B2-AFD1-CE23A93519BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DBBD641C-0198-47B2-AFD1-CE23A93519BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DBBD641C-0198-47B2-AFD1-CE23A93519BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DDBB5E93-A913-4A34-8A17-D2FD9D7A0194}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DDBB5E93-A913-4A34-8A17-D2FD9D7A0194}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DDBB5E93-A913-4A34-8A17-D2FD9D7A0194}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DDBB5E93-A913-4A34-8A17-D2FD9D7A0194}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -46,6 +52,7 @@ Global
 		{406A80E6-5802-4C3E-9A92-5C05F5BD8BC9} = {53DF30CB-F69E-4001-ADBB-4FBE5307B8EB}
 		{4EBC8786-E4D7-43BD-8898-4E7E182D30CA} = {53DF30CB-F69E-4001-ADBB-4FBE5307B8EB}
 		{DBBD641C-0198-47B2-AFD1-CE23A93519BB} = {53DF30CB-F69E-4001-ADBB-4FBE5307B8EB}
+		{DDBB5E93-A913-4A34-8A17-D2FD9D7A0194} = {53DF30CB-F69E-4001-ADBB-4FBE5307B8EB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E66A96AF-8B13-4421-93B2-E9421CDB4507}
