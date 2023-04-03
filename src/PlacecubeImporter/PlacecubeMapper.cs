@@ -3,6 +3,7 @@ using FamilyHubs.ServiceDirectory.Shared.Dto;
 using FamilyHubs.ServiceDirectory.Shared.Enums;
 using PlacecubeImporter.Services;
 using PluginBase;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace PlacecubeImporter;
 
@@ -62,6 +63,14 @@ internal class PlacecubeMapper : BaseMapper
     {
         List<string> errors = new List<string>();
         OrganisationWithServicesDto serviceDirectoryOrganisation = default!;
+
+        if (placecubeSimpleService.organization == null)
+        {
+            string error = $"Organisation is null for service id: {placecubeSimpleService.id}";
+            errors.Add(error);
+            Console.WriteLine(error);
+            return errors.Count;
+        }
 
         bool newOrganisation = false;
         if (_dictOrganisations.ContainsKey($"{_adminAreaCode}{placecubeSimpleService.organization.name}"))
@@ -125,6 +134,14 @@ internal class PlacecubeMapper : BaseMapper
     private async Task<int> AddAndUpdateService(PlacecubeService placecubeService)
     {
         List<string> errors = new List<string>();
+
+        if (placecubeService.organization == null)
+        {
+            string error = $"Organisation is null for service id: {placecubeService.id}";
+            errors.Add(error);
+            Console.WriteLine(error);
+            return errors.Count;
+        }
         
         OrganisationWithServicesDto serviceDirectoryOrganisation = default!;
 
