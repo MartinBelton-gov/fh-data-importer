@@ -340,13 +340,16 @@ internal class SouthamptonMapper : BaseMapper
         }
 
         List<LocationDto> listLocationDto = new List<LocationDto>();
+        HashSet<string> hashLocationId = new HashSet<string>();
 
         foreach (ServiceAtLocation serviceAtLocation in serviceAtLocations)
         {
-            if (serviceAtLocation == null || serviceAtLocation.location == null)
+            if (serviceAtLocation == null || serviceAtLocation.location == null || hashLocationId.Contains(serviceAtLocation.location.id))
             {
                 continue;
             }
+
+            hashLocationId.Add(serviceAtLocation.location.id);
 
             PhysicalAddresses? physicalAddress = null;
             if (serviceAtLocation != null && serviceAtLocation.location != null && serviceAtLocation.location.physical_addresses != null && serviceAtLocation.location.physical_addresses.Any())
@@ -367,12 +370,6 @@ internal class SouthamptonMapper : BaseMapper
                 Country = physicalAddress != null ? physicalAddress.country : default!,
                 StateProvince = physicalAddress != null ? physicalAddress.state_province : default!,
             };
-
-            //if (serviceAtLocation != null)
-            //{
-            //    newLocation.RegularSchedules = GetRegularSchedules(serviceAtLocation.regular_schedule, existingService, null);
-            //    newLocation.HolidaySchedules = GetHolidaySchedules(serviceAtLocation.holidayScheduleCollection, existingService, null);
-            //}
 
             if (existingService != null)
             {

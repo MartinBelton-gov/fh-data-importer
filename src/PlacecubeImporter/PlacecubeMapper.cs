@@ -3,7 +3,6 @@ using FamilyHubs.ServiceDirectory.Shared.Dto;
 using FamilyHubs.ServiceDirectory.Shared.Enums;
 using PlacecubeImporter.Services;
 using PluginBase;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace PlacecubeImporter;
 
@@ -463,13 +462,17 @@ internal class PlacecubeMapper : BaseMapper
         }
 
         List<LocationDto> listLocationDto = new List<LocationDto>();
+
+        HashSet<string> hashLocationId = new HashSet<string>();
         
         foreach (ServiceAtLocation serviceAtLocation in serviceAtLocations)
         {
-            if (serviceAtLocation == null || serviceAtLocation.location == null) 
+            if (serviceAtLocation == null || serviceAtLocation.location == null || hashLocationId.Contains(serviceAtLocation.location.id)) 
             { 
                 continue; 
             }
+
+            hashLocationId.Add(serviceAtLocation.location.id);
 
             PhysicalAddresses? physicalAddress = null;
             if (serviceAtLocation != null && serviceAtLocation.location != null && serviceAtLocation.location.physical_addresses != null && serviceAtLocation.location.physical_addresses.Any())
@@ -507,7 +510,6 @@ internal class PlacecubeMapper : BaseMapper
                     continue;
                 }
             }
-           
 
             listLocationDto.Add(newLocation);
         }
