@@ -31,6 +31,17 @@ public class PlacecubeImporterCommand : IDataInputCommand
             Url = "https://www.elmbridge.gov.uk/",
         };
 
+        var bristolCouncil = new OrganisationWithServicesDto
+        {
+            AdminAreaCode = "E06000023",
+            OrganisationType = organisationType,
+            Name = "Bristol City Council",
+            Description = "Bristol City Council",
+            Logo = default!,
+            Uri = "https://www.bristol.gov.uk/",
+            Url = "https://www.bristol.gov.uk/",
+        };
+
         var northLincCouncil = new OrganisationWithServicesDto
         {
             AdminAreaCode = "E06000013",
@@ -57,7 +68,8 @@ public class PlacecubeImporterCommand : IDataInputCommand
             {
                 new CommandItem() { Name = pennineLancashire.Name, BaseUrl = "https://penninelancs.openplace.directory/o/ServiceDirectoryService/v2", AdminAreaCode = "E10000017", ParentOrganisation = pennineLancashire },
                 new CommandItem() { Name = northLincCouncil.Name, BaseUrl = "https://northlincs.openplace.directory/o/ServiceDirectoryService/v2", AdminAreaCode = "E06000013", ParentOrganisation = northLincCouncil },
-                new CommandItem() { Name = elmbridgeCouncil.Name, BaseUrl = "https://elmbridge.openplace.directory/o/ServiceDirectoryService/v2", AdminAreaCode = "E10000030", ParentOrganisation = elmbridgeCouncil }
+                new CommandItem() { Name = elmbridgeCouncil.Name, BaseUrl = "https://elmbridge.openplace.directory/o/ServiceDirectoryService/v2", AdminAreaCode = "E10000030", ParentOrganisation = elmbridgeCouncil },
+                new CommandItem() { Name = bristolCouncil.Name, BaseUrl = "https://bristol.openplace.directory/o/ServiceDirectoryService/v2/", AdminAreaCode = bristolCouncil.AdminAreaCode, ParentOrganisation = bristolCouncil }
             };
 
         foreach (var commandItem in commandItems)
