@@ -308,4 +308,82 @@ public class WhenAutoMapperIsUsed
         //Assert
         mappedTaxonomyDto.Should().BeEquivalentTo(taxonomyDto);
     }
+
+    [Fact]
+    public void ThenRegularScheduleMapsToRegularScheduleDto()
+    {
+        //Arrange
+        RegularSchedule regularSchedule = new RegularSchedule
+        {
+            id = "111",
+            opens_at = "2023-04-01 09:00:00",
+            closes_at = "2023-04-01 17:00:00",
+            valid_from = "2023-04-01",
+            valid_to = "2023-04-02",
+            byday = "byday",
+            bymonthday = "bymonthday",
+            description = "description",
+            dtstart = "dtStart",
+            freq = "NotSet",
+            interval = "interval"
+            
+        };
+
+        RegularScheduleDto regularScheduleDto = new RegularScheduleDto
+        {
+            Id = 111,
+            OpensAt = new DateTime(2023,04,01,09,0,00),
+            ClosesAt = new DateTime(2023, 04, 01, 17, 0, 00),
+            ValidFrom = new DateTime(2023, 4, 1),
+            ValidTo = new DateTime(2023, 4, 2),
+            ByDay = "byday",
+            ByMonthDay = "bymonthday",
+            Description = "description",
+            DtStart = "dtStart",
+            Freq = FrequencyType.NotSet,
+            Interval = "interval"
+        };
+
+        //Act
+        var mappedRegularScheduleDto = _mapper.Map<RegularScheduleDto>(regularSchedule);
+
+        //Assert
+        mappedRegularScheduleDto.Should().BeEquivalentTo(regularScheduleDto);
+    }
+
+    [Fact]
+    public void ThenHolidayScheduleMapsToHolidayScheduleDto()
+    {
+        //Arrange
+        HolidaySchedule holidaySchedule = new HolidaySchedule
+        {
+            id = "111",
+            service_id = "222",
+            service_at_location_id = "333",
+            closed = "true",
+            open_at = "2023-04-01 09:00:00",
+            closes_at = "2023-04-01 17:00:00",
+            start_date = "2023-04-01",
+            end_date = "2023-04-02",
+
+        };
+
+        HolidayScheduleDto holidayScheduleDto = new HolidayScheduleDto
+        {
+            Id = 111,
+            ServiceId = 222,
+            LocationId = 333,
+            Closed = true,
+            OpensAt = new DateTime(2023, 04, 01, 09, 0, 00),
+            ClosesAt = new DateTime(2023, 04, 01, 17, 0, 00),
+            StartDate = new DateTime(2023, 4, 1),
+            EndDate = new DateTime(2023, 4, 2),   
+        };
+
+        //Act
+        var mappedHolidayScheduleDto = _mapper.Map<HolidayScheduleDto>(holidaySchedule);
+
+        //Assert
+        mappedHolidayScheduleDto.Should().BeEquivalentTo(holidayScheduleDto);
+    }
 }

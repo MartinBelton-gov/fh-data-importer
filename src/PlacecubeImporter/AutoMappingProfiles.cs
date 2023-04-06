@@ -104,13 +104,14 @@ public class AutoMappingProfiles : Profile
         CreateMap<RegularSchedule, RegularScheduleDto>()
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.id))
             .ForMember(dest => dest.OpensAt, opt => opt.MapFrom(src => Helper.GetDateFromString(src.opens_at)))
+            .ForMember(dest => dest.ClosesAt, opt => opt.MapFrom(src => Helper.GetDateFromString(src.closes_at)))
             .ForMember(dest => dest.ValidFrom, opt => opt.MapFrom(src => Helper.GetDateFromString(src.valid_from)))
             .ForMember(dest => dest.ValidTo, opt => opt.MapFrom(src => Helper.GetDateFromString(src.valid_to)))
             .ForMember(dest => dest.ByDay, opt => opt.MapFrom(src => src.byday))
             .ForMember(dest => dest.ByMonthDay, opt => opt.MapFrom(src => src.bymonthday))
             .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.description))
             .ForMember(dest => dest.DtStart, opt => opt.MapFrom(src => src.dtstart))
-            .ForMember(dest => dest.Freq, opt => opt.MapFrom(src => src.freq))
+            .ForMember(dest => dest.Freq, opt => opt.MapFrom(src => StringToEnum.ConvertFrequencyType(src.freq)))
             .ForMember(dest => dest.Interval, opt => opt.MapFrom(src => src.interval))
             .ReverseMap();
         CreateMap<RegularSchedule, RegularSchedule>();

@@ -59,4 +59,15 @@ public static class StringToEnum
 
         return EligibilityType.NotSet;
     }
+
+    public static FrequencyType ConvertFrequencyType(string str)
+    {
+        if (Enum.TryParse<FrequencyType>(str, true, out FrequencyType result))
+        {
+            return result;
+        }
+
+        return FrequencyType.NotSet;
+
+    }
 }
