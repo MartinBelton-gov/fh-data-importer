@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\SalfordImporter\SalfordImporter.csproj" />
     <ProjectReference Include="..\BuckingshireImporter\BuckingshireImporter.csproj" />
     <ProjectReference Include="..\PlacecubeImporter\PlacecubeImporter.csproj" />
     <ProjectReference Include="..\SouthamptonImporter\SouthamptonImporter.csproj" />

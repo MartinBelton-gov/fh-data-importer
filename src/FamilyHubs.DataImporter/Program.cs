@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PlacecubeImporter;
 using PluginBase;
+using SalfordImporter;
 using SouthamptonImporter;
 
 //https://thecodeblogger.com/2022/09/16/net-dependency-injection-one-interface-and-multiple-implementations/
@@ -30,6 +31,7 @@ namespace FamilyHubs.DataImporter
             .AddScoped<IDataInputCommand, BuckingshireImportCommand>()
             .AddScoped<IDataInputCommand, PlacecubeImporterCommand>()
             .AddScoped<IDataInputCommand, SouthamtonImportCommand>()
+            .AddScoped<IDataInputCommand, SalfordImportCommand>()
             .BuildServiceProvider();
 
             using var loggerFactory = LoggerFactory.Create(builder =>
