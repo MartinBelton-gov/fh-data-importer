@@ -54,7 +54,7 @@ namespace FamilyHubs.DataImporter
 
             try
             {
-                // Seed Database
+                // Init Database
                 var initialiser = scope.ServiceProvider.GetRequiredService<ApplicationDbContextInitialiser>();
                 var shouldRestDatabaseOnRestart = Configuration.GetValue<bool>("ShouldClearDatabaseOnRestart");
                 await initialiser.InitialiseAsync(shouldRestDatabaseOnRestart);
@@ -69,6 +69,7 @@ namespace FamilyHubs.DataImporter
             string importerToTest = Configuration["ImporterToTest"] ?? default!;
             foreach (var service in services)
             {
+                service.ServiceScope = scope;
                 await service.Execute(servicedirectoryBaseUrl, importerToTest);
             }
         }

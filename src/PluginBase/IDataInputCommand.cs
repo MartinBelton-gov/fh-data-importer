@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System.Threading.Tasks;
 
 namespace PluginBase
 {
@@ -6,6 +7,8 @@ namespace PluginBase
     {
         string Name { get; }
         string Description { get; }
+        
+        IServiceScope? ServiceScope { get; set;  }
 
         Task<int> Execute(string arg, string testOnly);
     }

@@ -1,10 +1,14 @@
-﻿using FamilyHubs.ServiceDirectory.Shared.Dto;
+﻿using FamilyHubs.DataImporter.Infrastructure;
+using FamilyHubs.DataImporter.Infrastructure.Models;
+using FamilyHubs.ServiceDirectory.Shared.Dto;
 using FamilyHubs.ServiceDirectory.Shared.Enums;
+using FamilyHubs.SharedKernel;
 using PluginBase;
 using SalfordImporter.Services;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace SalfordImporter;
 
@@ -14,10 +18,14 @@ internal class SalfordMapper : BaseMapper
     public string Name => "Buckinghamshire Mapper";
 
     private readonly ISalfordClientService _salfordClientService;
-    public SalfordMapper(ISalfordClientService salfordClientService, IOrganisationClientService organisationClientService, string adminAreaCode, string key, OrganisationWithServicesDto parentLA)
+    private readonly IPostcodeLocationClientService _postcodeLocationClientService;
+    private readonly ApplicationDbContext _applicationDbContext;
+    public SalfordMapper(ISalfordClientService salfordClientService, IOrganisationClientService organisationClientService, IPostcodeLocationClientService postcodeLocationClientService, ApplicationDbContext applicationDbContext, string adminAreaCode, string key, OrganisationWithServicesDto parentLA)
         : base(organisationClientService, adminAreaCode, parentLA, key)
     {
         _salfordClientService = salfordClientService;
+        _applicationDbContext = applicationDbContext;
+        _postcodeLocationClientService = postcodeLocationClientService;
     }
 
     public async Task AddOrUpdateServices()
@@ -397,4 +405,34 @@ internal class SalfordMapper : BaseMapper
         return new List<CostOptionDto>();
     }
 
+    private async Task<(double latitude, double logtitude)> GetCoordinates(string postCode)
+    {
+        try
+        {
+            var postcodeCache = _applicationDbContext.PostCodeCache.FirstOrDefault(x => x.PostCode == postCode);
+            if (postcodeCache != null)
+            {
+                return (postcodeCache.Latitude, postcodeCache.Longitude);
+            }
+
+            PostcodesIoResponse postcodesIoResponse = await _postcodeLocationClientService.LookupPostcode(postCode);
+            PostCodeCache postCodeCache = new PostCodeCache
+            {
+                PostCode = postCode,
+                AdminCounty = postcodesIoResponse.Result.Codes.AdminCounty,
+                AdminDistrict = postcodesIoResponse.Result.Codes.AdminCounty,
+                Latitude = postcodesIoResponse.Result.Latitude,
+                Longitude = postcodesIoResponse.Result.Longitude,
+            };
+
+            _applicationDbContext.PostCodeCache.Add(postCodeCache);
+            await _applicationDbContext.SaveChangesAsync();
+
+            return (postcodesIoResponse.Result.Latitude, postcodesIoResponse.Result.Longitude);
+        }
+        catch
+        {
+            return (0.0, 0.0);
+        }   
+    }
 }

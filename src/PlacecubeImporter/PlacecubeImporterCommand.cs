@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FamilyHubs.ServiceDirectory.Shared.Dto;
 using FamilyHubs.ServiceDirectory.Shared.Enums;
+using Microsoft.Extensions.DependencyInjection;
 using PlacecubeImporter.Services;
 using PluginBase;
 
@@ -10,6 +11,7 @@ public class PlacecubeImporterCommand : IDataInputCommand
 {
     public string Name { get => "DataImporter"; }
     public string Description { get => "Imports Placecube Data."; }
+    public IServiceScope? ServiceScope { get; set; }
 
     public async Task<int> Execute(string arg, string testOnly)
     {

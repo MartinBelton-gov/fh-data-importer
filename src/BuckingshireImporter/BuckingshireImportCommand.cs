@@ -1,6 +1,7 @@
 ﻿using BuckingshireImporter.Services;
 using FamilyHubs.ServiceDirectory.Shared.Dto;
 using FamilyHubs.ServiceDirectory.Shared.Enums;
+using Microsoft.Extensions.DependencyInjection;
 using PluginBase;
 
 namespace BuckingshireImporter
@@ -9,6 +10,7 @@ namespace BuckingshireImporter
     {
         public string Name { get => "DataImporter"; }
         public string Description { get => "Imports Buckinghamshire Data."; }
+        public IServiceScope? ServiceScope { get; set; }
 
         public async Task<int> Execute(string arg, string testOnly)
         {
