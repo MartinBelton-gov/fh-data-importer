@@ -8,6 +8,9 @@ using PlacecubeImporter;
 using PluginBase;
 using SalfordImporter;
 using SouthamptonImporter;
+using FamilyHubs.DataImporter.Infrastructure;
+using SalfordImporter.Services;
+using static System.Formats.Asn1.AsnWriter;
 
 //https://thecodeblogger.com/2022/09/16/net-dependency-injection-one-interface-and-multiple-implementations/
 
@@ -32,6 +35,7 @@ namespace FamilyHubs.DataImporter
             .AddScoped<IDataInputCommand, PlacecubeImporterCommand>()
             .AddScoped<IDataInputCommand, SouthamtonImportCommand>()
             .AddScoped<IDataInputCommand, SalfordImportCommand>()
+            .RegisterAppDbContext(Configuration)
             .BuildServiceProvider();
 
             using var loggerFactory = LoggerFactory.Create(builder =>
@@ -45,6 +49,20 @@ namespace FamilyHubs.DataImporter
             ILogger logger = loggerFactory.CreateLogger<Program>();
 
             logger.LogDebug("Starting application");
+
+            using var scope = serviceProvider.CreateScope();
+
+            try
+            {
+                // Seed Database
+                var initialiser = scope.ServiceProvider.GetRequiredService<ApplicationDbContextInitialiser>();
+                var shouldRestDatabaseOnRestart = Configuration.GetValue<bool>("ShouldClearDatabaseOnRestart");
+                await initialiser.InitialiseAsync(shouldRestDatabaseOnRestart);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "An error occurred seeding the DB. {exceptionMessage}", ex.Message);
+            }
 
             IEnumerable<IDataInputCommand> services = serviceProvider.GetServices<IDataInputCommand>();
             string servicedirectoryBaseUrl = Configuration["ApplicationServiceApi:ServiceDirectoryUrl"] ?? default!;

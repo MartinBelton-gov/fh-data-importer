@@ -36,7 +36,8 @@ public class SalfordRecord
     public object images { get; set; } = default!;
     public Logo logo { get; set; } = default!;
     public string public_address_5 { get; set; } = default!;
-    public Files files { get; set; } = default!;
+    //public Files files { get; set; } = default!;
+    public object files { get; set; } = default!;
 }
 
 public class DateActivityPeriod
@@ -57,4 +58,31 @@ public class Files
     public string filename { get; set; } = default!;
     public string description { get; set; } = default!;
 }
+
+public class CostTable
+{
+    public string cost_amount { get; set; } = default!;
+    public CostType cost_type { get; set; } = default!;
+}
+
+public class CostType
+{
+    public string displayName { get; set; } = default!;
+    public string id { get; set; } = default!;
+}
+
+public class Website
+{
+    public NewWindow new_window { get; set; } = default!;
+    public string url { get; set; } = default!;
+    public string label { get; set; } = default!;
+}
+
+public class NewWindow
+{
+    public string displayName { get; set; } = default!;
+    public string id { get; set; } = default!;
+}
+
+
 

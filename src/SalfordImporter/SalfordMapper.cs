@@ -1,14 +1,10 @@
 ﻿using FamilyHubs.ServiceDirectory.Shared.Dto;
 using FamilyHubs.ServiceDirectory.Shared.Enums;
-using Microsoft.Extensions.Hosting;
 using PluginBase;
 using SalfordImporter.Services;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net.NetworkInformation;
 using System.Text;
-using System.Threading.Tasks;
+using System.Text.Json;
 
 namespace SalfordImporter;
 
@@ -29,14 +25,33 @@ internal class SalfordMapper : BaseMapper
         int errors = 0;
         await CreateOrganisationDictionary();
         await CreateTaxonomyDictionary();
-        SalfordService salfordService = await _salfordClientService.GetServices();
-        int totalPages = salfordService.totalRecords;
+        SalfordService salfordService = await _salfordClientService.GetServices(null,null);
+        int totalrecords = salfordService.totalRecords;
         int recordNumber = 0;
         foreach (var salfordRecord in salfordService.records)
         {
             recordNumber++;
             errors = await AddAndUpdateService(salfordRecord);
-            Console.WriteLine($"Completed Record {recordNumber} of {totalPages} with {errors} errors");
+            Console.WriteLine($"Completed Record {recordNumber} of {totalrecords} with {errors} errors");
+        }
+
+        while (recordNumber + 1 < totalrecords)
+        {
+            if ((recordNumber + 100) < totalrecords)
+            {
+                salfordService = await _salfordClientService.GetServices(recordNumber + 1, 100);
+            }
+            else
+            {
+                salfordService = await _salfordClientService.GetServices(recordNumber + 1, totalrecords-recordNumber);
+            }
+
+            foreach (var salfordRecord in salfordService.records)
+            {
+                recordNumber++;
+                errors = await AddAndUpdateService(salfordRecord);
+                Console.WriteLine($"Completed Record {recordNumber} of {totalrecords} with {errors} errors");
+            }
         }
     }
 
@@ -55,13 +70,18 @@ internal class SalfordMapper : BaseMapper
         }
         else
         {
+            if (string.IsNullOrEmpty(salfordRecord.title))
+            {
+                System.Diagnostics.Debug.WriteLine("Got Here");
+            }
+
             const OrganisationType organisationType = OrganisationType.VCFS;
             serviceDirectoryOrganisation = new OrganisationWithServicesDto
             {
                 AdminAreaCode = _adminAreaCode,
                 OrganisationType = organisationType,
-                Name = !string.IsNullOrEmpty(salfordRecord.venue_name) ? salfordRecord.venue_name: salfordRecord.public_address_1,
-                Description = salfordRecord.description,
+                Name = salfordRecord.title, //!string.IsNullOrEmpty(salfordRecord.venue_name) ? salfordRecord.venue_name: salfordRecord.title,
+                Description = !string.IsNullOrEmpty(salfordRecord.description) ? salfordRecord.description : salfordRecord.title,
                 Logo = null,
                 Uri = salfordRecord.recordUri,
                 Url = salfordRecord.recordUri,
@@ -81,7 +101,7 @@ internal class SalfordMapper : BaseMapper
             OrganisationId = serviceDirectoryOrganisation.Id,
             ServiceType = ServiceType.InformationSharing,
             ServiceOwnerReferenceId = serviceOwnerReferenceId,
-            Name = !string.IsNullOrEmpty(salfordRecord.venue_name) ? salfordRecord.venue_name : salfordRecord.public_address_1,
+            Name = salfordRecord.title,
             Description = salfordRecord.description,
             Accreditations = null,
             AssuredDate = null,
@@ -92,7 +112,7 @@ internal class SalfordMapper : BaseMapper
             Fees = null,
             CanFamilyChooseDeliveryLocation = false,
             Eligibilities = GetEligibilityDtos(salfordRecord, existingService),
-            //CostOptions = GetCostOptionDtos(content.cost_options, existingService),
+            CostOptions = GetCostOptionDtos(salfordRecord, existingService),
             //RegularSchedules = GetRegularSchedules(content.regular_schedules, existingService, null),
             Contacts = GetContactDtos(salfordRecord, existingService),
             //Taxonomies = await GetServiceTaxonomies(content.taxonomies, existingService),
@@ -184,6 +204,10 @@ internal class SalfordMapper : BaseMapper
 
     private string[] ConvertObjectToStringArray(object value)
     {
+        if (value == null)
+        {
+            return new string[0];
+        }
         string result = value.ToString() ?? string.Empty;
         result = result.Replace("[", "").Replace("]", "") ?? string.Empty;
         return result.Split(',');
@@ -236,18 +260,141 @@ internal class SalfordMapper : BaseMapper
             //Description = physicalAddress != null ? $"{physicalAddress.address_1} {physicalAddress.postal_code}" : null,
             Longitude = 0.0D,
             Latitude = 0.0D,
-            Address1 = !string.IsNullOrEmpty(salfordRecord.public_address_1) ? salfordRecord.public_address_1 : default!,
-            Address2 = !string.IsNullOrEmpty(salfordRecord.public_address_2) ? salfordRecord.public_address_2 : default!,
-            City = !string.IsNullOrEmpty(salfordRecord.public_address_3) ? salfordRecord.public_address_3 : default!,
-            StateProvince = !string.IsNullOrEmpty(salfordRecord.public_address_4) ? salfordRecord.public_address_4 : default!,
-            PostCode = !string.IsNullOrEmpty(salfordRecord.venue_postcode) ? salfordRecord.venue_postcode : default!,
+            Address1 = !string.IsNullOrEmpty(salfordRecord.public_address_1) ? salfordRecord.public_address_1 : " ",
+            Address2 = !string.IsNullOrEmpty(salfordRecord.public_address_2) ? salfordRecord.public_address_2 : " ",
+            City = !string.IsNullOrEmpty(salfordRecord.public_address_3) ? salfordRecord.public_address_3 : " ",
+            StateProvince = !string.IsNullOrEmpty(salfordRecord.public_address_4) ? salfordRecord.public_address_4 : " ",
+            PostCode = !string.IsNullOrEmpty(salfordRecord.venue_postcode) ? salfordRecord.venue_postcode : " ",
             Country = "England",
+            RegularSchedules = GetRegularSchedules(salfordRecord.date_activity_period, existingService)
         };
 
         return new List<LocationDto>()
         { 
             newLocation
         };
+    }
+
+    private List<RegularScheduleDto> GetRegularSchedules(DateActivityPeriod dateActivityPeriod, ServiceDto? existingService)
+    {
+        if (dateActivityPeriod == null || !dateActivityPeriod.weekdays.Any()) 
+        { 
+            return new List<RegularScheduleDto>();
+        }
+
+        List<RegularScheduleDto> listRegularScheduleDto = new List<RegularScheduleDto>();
+
+        foreach (var day in dateActivityPeriod.weekdays)
+        {
+            var regularScheduleItem = new RegularScheduleDto
+            {
+                Freq = FrequencyType.NotSet,
+                ByDay = GetDayOfTheWeek(day),
+            };
+
+            if (existingService != null && existingService.RegularSchedules != null)
+            {
+                RegularScheduleDto? existingItem = existingService.RegularSchedules.FirstOrDefault(x => x.Equals(regularScheduleItem));
+
+                if (existingItem != null)
+                {
+                    listRegularScheduleDto.Add(existingItem);
+                    continue;
+                }
+            }
+
+            listRegularScheduleDto.Add(regularScheduleItem);
+        }
+
+        return listRegularScheduleDto;
+    }
+
+    private string GetDayOfTheWeek(string value)
+    {
+        if (int.TryParse(value, out int dayOfTheWeek))
+        {
+            switch (dayOfTheWeek)
+            {
+                case 1:
+                    return "Sunday";
+                case 2:
+                    return "Monday";
+                case 3:
+                    return "Tuesday";
+                case 4:
+                    return "Wednesday";
+                case 5:
+                    return "Thursday";
+                case 6:
+                    return "Friday";
+                case 7:
+                    return "Saturday";
+
+            }
+        }
+
+        return string.Empty;
+    }
+
+    private List<CostOptionDto> GetCostOptionDtos(SalfordRecord salfordRecord, ServiceDto? existingService)
+    {
+        if (salfordRecord.cost_table == null) 
+        {
+            return new List<CostOptionDto>();
+        }
+
+        List<CostOptionDto> costOptionDtos = new List<CostOptionDto>();
+
+        string json = string.Empty;
+        try
+        {
+            json = salfordRecord.cost_table.ToString() ?? string.Empty;
+        }
+        catch
+        {
+            return new List<CostOptionDto>();
+        }
+
+        if (string.IsNullOrEmpty(json))
+        {
+            return new List<CostOptionDto>();
+        }
+
+        try
+        {
+            CostTable[] results = JsonSerializer.Deserialize<CostTable[]>(json) ?? new CostTable[0];
+            if (results.Any())
+            {
+                foreach (CostTable costTable in results)
+                {
+                    var costOptionDto = new CostOptionDto
+                    {
+                        AmountDescription = costTable.cost_amount,
+                        Option = costTable?.cost_type?.displayName
+                    };
+
+                    if (existingService != null && existingService.CostOptions != null)
+                    {
+                        CostOptionDto? existingItem = existingService.CostOptions.FirstOrDefault(x => x.Equals(costOptionDto));
+
+                        if (existingItem != null)
+                        {
+                            costOptionDtos.Add(existingItem);
+                            continue;
+                        }
+                    }
+
+                    costOptionDtos.Add(costOptionDto);
+                }
+            }
+        }
+        catch
+        {
+            return new List<CostOptionDto>();
+        }
+
+
+        return new List<CostOptionDto>();
     }
 
 }

@@ -4,7 +4,7 @@ namespace SalfordImporter.Services;
 
 internal interface ISalfordClientService
 {
-    Task<SalfordService> GetServices();
+    Task<SalfordService> GetServices(int? startIndex, int? count);
 }
 
 internal class SalfordClientService : ISalfordClientService
@@ -16,9 +16,15 @@ internal class SalfordClientService : ISalfordClientService
         _client = new RestClient(baseUri);
     }
 
-    public async Task<SalfordService> GetServices()
+    public async Task<SalfordService> GetServices(int? startIndex, int? count)
     {
-        var request = new RestRequest($"?key=633eb0a9e4b0b3bc6d117a9a");
+        string url = "?key=633eb0a9e4b0b3bc6d117a9a";
+        if (startIndex != null && count != null) 
+        {
+            url += $"&startIndex={startIndex}&count={count}";
+        }
+
+        var request = new RestRequest(url);
 
         return await _client.GetAsync<SalfordService>(request, CancellationToken.None) ?? new SalfordService();
     }
