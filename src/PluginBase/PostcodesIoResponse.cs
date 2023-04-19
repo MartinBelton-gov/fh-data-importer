@@ -24,7 +24,7 @@ public class PostcodeInfo
     [JsonProperty("postcode")]
     public string Postcode { get; set; } = default!;
 
-    public string AdminArea => string.Equals(Codes.AdminCounty, "E99999999", StringComparison.InvariantCultureIgnoreCase) ? Codes.AdminDistrict : Codes.AdminCounty;
+    public string AdminArea => string.Equals(Codes.admin_county, "E99999999", StringComparison.InvariantCultureIgnoreCase) ? Codes.admin_district : Codes.admin_county;
 
     [JsonProperty("latitude")]
     public double Latitude { get; set; }
@@ -44,9 +44,13 @@ public class PostcodeInfo
 
 public class Codes
 {
-    [JsonProperty("admin_district")]
-    public string AdminDistrict { get; set; } = default!;
+    public string admin_district { get; set; } = default!;
+    public string admin_county { get; set; } = default!;
+    public string admin_ward { get; set; } = default!;
 
-    [JsonProperty("admin_county")]
-    public string AdminCounty { get; set; } = default!;
+    //[JsonProperty("admin_district")]
+    //public string AdminDistrict { get; set; } = default!;
+
+    //[JsonProperty("admin_county")]
+    //public string AdminCounty { get; set; } = default!;
 }

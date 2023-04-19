@@ -2,13 +2,12 @@
 using FamilyHubs.DataImporter.Infrastructure.Models;
 using FamilyHubs.ServiceDirectory.Shared.Dto;
 using FamilyHubs.ServiceDirectory.Shared.Enums;
-using FamilyHubs.SharedKernel;
 using PluginBase;
 using SalfordImporter.Services;
-using System.Collections.Generic;
+using System.Numerics;
 using System.Text;
 using System.Text.Json;
-using static System.Formats.Asn1.AsnWriter;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SalfordImporter;
 
@@ -124,7 +123,7 @@ internal class SalfordMapper : BaseMapper
             //RegularSchedules = GetRegularSchedules(content.regular_schedules, existingService, null),
             Contacts = GetContactDtos(salfordRecord, existingService),
             //Taxonomies = await GetServiceTaxonomies(content.taxonomies, existingService),
-            Locations = GetLocations(salfordRecord, existingService),
+            Locations = await GetLocations(salfordRecord, existingService),
 
         };
 
@@ -210,6 +209,43 @@ internal class SalfordMapper : BaseMapper
         return numbers;
     }
 
+    private decimal ExtractCost(string value)
+    {
+        if (string.IsNullOrEmpty(value) || string.Compare("Free",value,StringComparison.OrdinalIgnoreCase) == 0) 
+        {
+            return 0.0M;
+        }
+        StringBuilder stringBuilder = new StringBuilder();
+        bool readingNumber = false;
+        for (int i = 0; i < value.Length; i++)
+        {
+
+            if (Char.IsDigit(value[i]))
+            {
+                readingNumber = true;
+                stringBuilder.Append(value[i]);
+            }
+            else
+            {
+                if(readingNumber && value[i] == '.')
+                {
+                    stringBuilder.Append(value[i]);
+                    continue;
+                }
+                break;
+            }
+
+            
+        }
+
+        if (stringBuilder.Length > 0 && decimal.TryParse(stringBuilder.ToString(), out decimal number))
+        {
+            return number;
+        }
+
+        return 0.0M;
+    }
+
     private string[] ConvertObjectToStringArray(object value)
     {
         if (value == null)
@@ -234,9 +270,9 @@ internal class SalfordMapper : BaseMapper
 
         var newContact = new ContactDto
         {
-            Title = salfordRecord.title,
             Name = salfordRecord.contact_name,
             Telephone = phoneNumber != null && phoneNumber.Any() ? phoneNumber[0] : string.Empty,
+            Email = salfordRecord.contact_email
         };
 
         if (existingService != null)
@@ -254,27 +290,42 @@ internal class SalfordMapper : BaseMapper
         return list;
     }
 
-    private List<LocationDto> GetLocations(SalfordRecord salfordRecord, ServiceDto? existingService)
+    private async Task<List<LocationDto>> GetLocations(SalfordRecord salfordRecord, ServiceDto? existingService)
     {
         if (string.IsNullOrEmpty(salfordRecord.venue_postcode))
         {
             return new List<LocationDto>();
         }
 
+        (double latitude, double logtitude) = await GetCoordinates(salfordRecord.venue_postcode);
+
+        string[] phoneNumber = ConvertObjectToStringArray(salfordRecord.contact_telephone);
+
+        var newContact = new ContactDto
+        {
+            Name = salfordRecord.contact_name,
+            Telephone = phoneNumber != null && phoneNumber.Any() ? phoneNumber[0] : string.Empty,
+            Email = salfordRecord.contact_email
+        };
+
         var newLocation = new LocationDto
         {
             LocationType = LocationType.NotSet,
             Name = !string.IsNullOrEmpty(salfordRecord.venue_name) ? salfordRecord.venue_name : salfordRecord.public_address_1,
             //Description = physicalAddress != null ? $"{physicalAddress.address_1} {physicalAddress.postal_code}" : null,
-            Longitude = 0.0D,
-            Latitude = 0.0D,
+            Longitude = latitude,
+            Latitude = logtitude,
             Address1 = !string.IsNullOrEmpty(salfordRecord.public_address_1) ? salfordRecord.public_address_1 : " ",
             Address2 = !string.IsNullOrEmpty(salfordRecord.public_address_2) ? salfordRecord.public_address_2 : " ",
             City = !string.IsNullOrEmpty(salfordRecord.public_address_3) ? salfordRecord.public_address_3 : " ",
             StateProvince = !string.IsNullOrEmpty(salfordRecord.public_address_4) ? salfordRecord.public_address_4 : " ",
             PostCode = !string.IsNullOrEmpty(salfordRecord.venue_postcode) ? salfordRecord.venue_postcode : " ",
             Country = "England",
-            RegularSchedules = GetRegularSchedules(salfordRecord.date_activity_period, existingService)
+            RegularSchedules = GetRegularSchedules(salfordRecord.date_activity_period, existingService),
+            Contacts = new List<ContactDto>()
+            {
+                newContact
+            }
         };
 
         return new List<LocationDto>()
@@ -377,7 +428,8 @@ internal class SalfordMapper : BaseMapper
                 {
                     var costOptionDto = new CostOptionDto
                     {
-                        AmountDescription = costTable.cost_amount,
+                        AmountDescription = salfordRecord.cost_description,
+                        Amount = ExtractCost(costTable.cost_amount),
                         Option = costTable?.cost_type?.displayName
                     };
 
@@ -407,6 +459,12 @@ internal class SalfordMapper : BaseMapper
 
     private async Task<(double latitude, double logtitude)> GetCoordinates(string postCode)
     {
+        if (string.IsNullOrEmpty(postCode)) 
+        {
+            Console.WriteLine($"Empty postcode return zero lat/long");
+            return (0.0, 0.0);
+        }
+
         try
         {
             var postcodeCache = _applicationDbContext.PostCodeCache.FirstOrDefault(x => x.PostCode == postCode);
@@ -419,8 +477,8 @@ internal class SalfordMapper : BaseMapper
             PostCodeCache postCodeCache = new PostCodeCache
             {
                 PostCode = postCode,
-                AdminCounty = postcodesIoResponse.Result.Codes.AdminCounty,
-                AdminDistrict = postcodesIoResponse.Result.Codes.AdminCounty,
+                AdminCounty = postcodesIoResponse.Result.Codes.admin_county,
+                AdminDistrict = postcodesIoResponse.Result.Codes.admin_district,
                 Latitude = postcodesIoResponse.Result.Latitude,
                 Longitude = postcodesIoResponse.Result.Longitude,
             };
@@ -430,9 +488,12 @@ internal class SalfordMapper : BaseMapper
 
             return (postcodesIoResponse.Result.Latitude, postcodesIoResponse.Result.Longitude);
         }
-        catch
+        catch(Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine(ex);
+            Console.WriteLine($"Failed to find Postcode: {postCode} from postcodes.io return zero lat/long");
             return (0.0, 0.0);
         }   
     }
+
 }

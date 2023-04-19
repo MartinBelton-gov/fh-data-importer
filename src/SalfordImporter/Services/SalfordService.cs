@@ -73,12 +73,12 @@ public class CostType
 
 public class Website
 {
-    public NewWindow new_window { get; set; } = default!;
+    public DisplayInfo new_window { get; set; } = default!;
     public string url { get; set; } = default!;
     public string label { get; set; } = default!;
 }
 
-public class NewWindow
+public class DisplayInfo
 {
     public string displayName { get; set; } = default!;
     public string id { get; set; } = default!;
