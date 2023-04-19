@@ -6,102 +6,113 @@ using PluginBase;
 
 namespace PlacecubeImporter;
 
-internal class AutoMappingProfiles : Profile
+public class AutoMappingProfiles : Profile
 {
     public AutoMappingProfiles()
     {
 
-        CreateMap<string, int>().ConvertUsing(s => Convert.ToInt32(s));
-        CreateMap<string, long>().ConvertUsing(s => Convert.ToInt64(s));
+        //CreateMap<string, int>().ConvertUsing(s => Convert.ToInt32(s));
+        //CreateMap<string, long>().ConvertUsing(s => Convert.ToInt64(s));
         CreateMap<string, DateTime?>().ConvertUsing(new DateTimeTypeConverter());
         CreateMap<Phone[], string>().ConvertUsing(new PhonesToSingleConverter());
 
-        CreateMap<AccessibilityForDisabilitiesDto, AccessibilityForDisabilities>().ReverseMap();
-        CreateMap<CostOptionDto, CostOptions>()
-            .ForMember(dest => dest.id, opt => opt.MapFrom(src => src.Id))
-            .ForMember(dest => dest.service_id, opt => opt.MapFrom(src => src.ServiceId))
-            .ForMember(dest => dest.amount, opt => opt.MapFrom(src => src.Amount))
-            .ForMember(dest => dest.amount_description, opt => opt.MapFrom(src => src.AmountDescription))
-            .ForMember(dest => dest.option, opt => opt.MapFrom(src => src.Option))
-            .ForMember(dest => dest.valid_from, opt => opt.MapFrom(src => src.ValidFrom))
-            .ForMember(dest => dest.valid_to, opt => opt.MapFrom(src => src.ValidTo))
+        CreateMap<AccessibilityForDisabilitiesDto, AccessibilityForDisabilities>()
+            .ForMember(dest => dest.accessibility, opt => opt.MapFrom(src => src.Accessibility))
             .ReverseMap();
-        CreateMap<EligibilityDto, Eligibility>()
-            .ForMember(dest => dest.id, opt => opt.MapFrom(src => src.Id))
-            .ForMember(dest => dest.service_id, opt => opt.MapFrom(src => src.ServiceId))
-            .ForMember(dest => dest.minimum_age, opt => opt.MapFrom(src => src.MinimumAge))
-            .ForMember(dest => dest.maximum_age, opt => opt.MapFrom(src => src.MaximumAge))
-            .ForMember(dest => dest.eligibility, opt => opt.MapFrom(src => EligibilityType.NotSet))
+        CreateMap<CostOptions, CostOptionDto>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.id))
+            .ForMember(dest => dest.ServiceId, opt => opt.MapFrom(src => src.service_id))
+            .ForMember(dest => dest.Amount, opt => opt.MapFrom(src => src.amount))
+            .ForMember(dest => dest.AmountDescription, opt => opt.MapFrom(src => src.amount_description))
+            .ForMember(dest => dest.Option, opt => opt.MapFrom(src => src.option))
+            .ForMember(dest => dest.ValidFrom, opt => opt.MapFrom(src => Helper.GetDateFromString(src.valid_from)))
+            .ForMember(dest => dest.ValidTo, opt => opt.MapFrom(src => Helper.GetDateFromString(src.valid_to)))
             .ReverseMap();
-        CreateMap<FundingDto, Funding>()
-            .ForMember(dest => dest.id, opt => opt.MapFrom(src => src.Id))
-            .ForMember(dest => dest.service_id, opt => opt.MapFrom(src => src.ServiceId))
-            .ForMember(dest => dest.source, opt => opt.MapFrom(src => src.Source))
+        CreateMap<Eligibility, EligibilityDto>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.id))
+            .ForMember(dest => dest.ServiceId, opt => opt.MapFrom(src => src.service_id))
+            .ForMember(dest => dest.MinimumAge, opt => opt.MapFrom(src => src.minimum_age))
+            .ForMember(dest => dest.MaximumAge, opt => opt.MapFrom(src => src.maximum_age))
+            .ForMember(dest => dest.EligibilityType, opt => opt.MapFrom(src => StringToEnum.ConvertEligibilityType(src.eligibility)))
             .ReverseMap();
-        CreateMap<LanguageDto, Language>()
-            .ForMember(dest => dest.id, opt => opt.MapFrom(src => src.Id))
-            .ForMember(dest => dest.service_id, opt => opt.MapFrom(src => src.ServiceId))
-            .ForMember(dest => dest.language, opt => opt.MapFrom(src => src.Name))
+        CreateMap<Funding, FundingDto>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.id))
+            .ForMember(dest => dest.ServiceId, opt => opt.MapFrom(src => src.service_id))
+            .ForMember(dest => dest.Source, opt => opt.MapFrom(src => src.source))
+            .ReverseMap();
+        CreateMap<Language, LanguageDto>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.id))
+            .ForMember(dest => dest.ServiceId, opt => opt.MapFrom(src => src.service_id))
+            .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.language))
             .ReverseMap();
         //CreateMap<ReviewDto, Review>().ReverseMap();
         //CreateMap<ServiceDto, Service>().ReverseMap();
-        CreateMap<ServiceAreaDto, ServiceArea>()
-            .ForMember(dest => dest.id, opt => opt.MapFrom(src => src.Id))
-            .ForMember(dest => dest.extent, opt => opt.MapFrom(src => src.Extent))
-            .ForMember(dest => dest.service_area, opt => opt.MapFrom(src => src.ServiceAreaName))
+        CreateMap<ServiceArea, ServiceAreaDto>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.id))
+            .ForMember(dest => dest.Extent, opt => opt.MapFrom(src => src.extent))
+            .ForMember(dest => dest.ServiceAreaName, opt => opt.MapFrom(src => src.service_area))
             .ReverseMap();
         //CreateMap<ServiceDeliveryDto, ServiceDelivery>().ReverseMap();
         //CreateMap<OrganisationDto, Organisation>().ReverseMap();
         //CreateMap<OrganisationWithServicesDto, Organisation>().ReverseMap();
         //CreateMap<OrganisationExDto, Organisation>().ReverseMap();
 
-        CreateMap<LocationDto, Location>()
-            .ForMember(dest => dest.id, opt => opt.MapFrom(src => src.Id))
-            .ForMember(dest => dest.latitude, opt => opt.MapFrom(src => src.Latitude))
-            .ForMember(dest => dest.longitude, opt => opt.MapFrom(src => src.Longitude))
-            .ForMember(dest => dest.name, opt => opt.MapFrom(src => src.Name))
+        CreateMap<Location, LocationDto>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.id))
+            .ForMember(dest => dest.LocationType, opt => opt.MapFrom(src => LocationType.FamilyHub))
+            .ForMember(dest => dest.Latitude, opt => opt.MapFrom(src => src.latitude))
+            .ForMember(dest => dest.Longitude, opt => opt.MapFrom(src => src.longitude))
+            .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.name))
+            .ForMember(dest => dest.AccessibilityForDisabilities, opt => opt.MapFrom(src => src.accessibility_for_disabilities))
+            .ForMember(dest => dest.Address1, opt => opt.MapFrom(src => src.physical_addresses.First().address_1))
+            .ForMember(dest => dest.City, opt => opt.MapFrom(src => src.physical_addresses.First().city))
+            .ForMember(dest => dest.Country, opt => opt.MapFrom(src => src.physical_addresses.First().country))
+            .ForMember(dest => dest.PostCode, opt => opt.MapFrom(src => src.physical_addresses.First().postal_code))
+            .ForMember(dest => dest.StateProvince, opt => opt.MapFrom(src => src.physical_addresses.First().state_province))
             .ReverseMap();
+
         CreateMap<Location, Location>();
 
-        CreateMap<TaxonomyDto, Taxonomy>()
-            .ForMember(dest => dest.id, opt => opt.MapFrom(src => src.Id))
-            .ForMember(dest => dest.name, opt => opt.MapFrom(src => src.Name))
-            .ForMember(dest => dest.vocabulary, opt => opt.MapFrom(src => TaxonomyType.ServiceCategory))
+        CreateMap<Taxonomy, TaxonomyDto>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.id))
+            .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.name))
+            .ForMember(dest => dest.TaxonomyType, opt => opt.MapFrom(src => TaxonomyType.ServiceCategory))
             .ReverseMap();
         CreateMap<Taxonomy, Taxonomy>();
 
-        CreateMap<ContactDto, Contact>()
-            .ForMember(dest => dest.id, opt => opt.MapFrom(src => src.Id))
-            .ForMember(dest => dest.name, opt => opt.MapFrom(src => src.Name))
-            .ForMember(dest => dest.title, opt => opt.MapFrom(src => src.Title))
-            .ForMember(dest => dest.phones, opt => opt.MapFrom(src => src.Telephone))
-            .ForMember(dest => dest.phones, opt => opt.MapFrom(src => src.TextPhone))
+        CreateMap<Contact, ContactDto>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.id))
+            .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.name))
+            .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.title))
+            .ForMember(dest => dest.Telephone, opt => opt.MapFrom(src => src.phones))
+            .ForMember(dest => dest.TextPhone, opt => opt.MapFrom(src => src.phones))
             .ReverseMap();
         CreateMap<Contact, Contact>();
 
-        CreateMap<HolidayScheduleDto, HolidaySchedule>()
-            .ForMember(dest => dest.id, opt => opt.MapFrom(src => src.Id))
-            .ForMember(dest => dest.service_id, opt => opt.MapFrom(src => src.ServiceId))
-            .ForMember(dest => dest.service_at_location_id, opt => opt.MapFrom(src => src.LocationId))
-            .ForMember(dest => dest.closed, opt => opt.MapFrom(src => src.Closed))
-            .ForMember(dest => dest.open_at, opt => opt.MapFrom(src => src.OpensAt))
-            .ForMember(dest => dest.closes_at, opt => opt.MapFrom(src => src.ClosesAt))
-            .ForMember(dest => dest.start_date, opt => opt.MapFrom(src => src.StartDate))
-            .ForMember(dest => dest.end_date, opt => opt.MapFrom(src => src.EndDate))
+        CreateMap<HolidaySchedule, HolidayScheduleDto>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.id))
+            .ForMember(dest => dest.ServiceId, opt => opt.MapFrom(src => src.service_id))
+            .ForMember(dest => dest.LocationId, opt => opt.MapFrom(src => src.service_at_location_id))
+            .ForMember(dest => dest.Closed, opt => opt.MapFrom(src => src.closed))
+            .ForMember(dest => dest.OpensAt, opt => opt.MapFrom(src => Helper.GetDateFromString(src.open_at)))
+            .ForMember(dest => dest.ClosesAt, opt => opt.MapFrom(src => Helper.GetDateFromString(src.closes_at)))
+            .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => Helper.GetDateFromString(src.start_date)))
+            .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => Helper.GetDateFromString(src.end_date)))
             .ReverseMap();
         CreateMap<HolidaySchedule, HolidaySchedule>();
 
-        CreateMap<RegularScheduleDto, RegularSchedule>()
-            .ForMember(dest => dest.id, opt => opt.MapFrom(src => src.Id))
-            .ForMember(dest => dest.opens_at, opt => opt.MapFrom(src => src.OpensAt))
-            .ForMember(dest => dest.valid_from, opt => opt.MapFrom(src => src.ValidFrom))
-            .ForMember(dest => dest.valid_to, opt => opt.MapFrom(src => src.ValidTo))
-            .ForMember(dest => dest.byday, opt => opt.MapFrom(src => src.ByDay))
-            .ForMember(dest => dest.bymonthday, opt => opt.MapFrom(src => src.ByMonthDay))
-            .ForMember(dest => dest.description, opt => opt.MapFrom(src => src.Description))
-            .ForMember(dest => dest.dtstart, opt => opt.MapFrom(src => src.DtStart))
-            .ForMember(dest => dest.freq, opt => opt.MapFrom(src => src.Freq))
-            .ForMember(dest => dest.interval, opt => opt.MapFrom(src => src.Interval))
+        CreateMap<RegularSchedule, RegularScheduleDto>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.id))
+            .ForMember(dest => dest.OpensAt, opt => opt.MapFrom(src => Helper.GetDateFromString(src.opens_at)))
+            .ForMember(dest => dest.ClosesAt, opt => opt.MapFrom(src => Helper.GetDateFromString(src.closes_at)))
+            .ForMember(dest => dest.ValidFrom, opt => opt.MapFrom(src => Helper.GetDateFromString(src.valid_from)))
+            .ForMember(dest => dest.ValidTo, opt => opt.MapFrom(src => Helper.GetDateFromString(src.valid_to)))
+            .ForMember(dest => dest.ByDay, opt => opt.MapFrom(src => src.byday))
+            .ForMember(dest => dest.ByMonthDay, opt => opt.MapFrom(src => src.bymonthday))
+            .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.description))
+            .ForMember(dest => dest.DtStart, opt => opt.MapFrom(src => src.dtstart))
+            .ForMember(dest => dest.Freq, opt => opt.MapFrom(src => StringToEnum.ConvertFrequencyType(src.freq)))
+            .ForMember(dest => dest.Interval, opt => opt.MapFrom(src => src.interval))
             .ReverseMap();
         CreateMap<RegularSchedule, RegularSchedule>();
     }

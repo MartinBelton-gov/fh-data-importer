@@ -1,5 +1,6 @@
 ﻿using FamilyHubs.ServiceDirectory.Shared.Dto;
 using FamilyHubs.ServiceDirectory.Shared.Enums;
+using Microsoft.Extensions.DependencyInjection;
 using PluginBase;
 using SouthamptonImporter.Services;
 
@@ -9,7 +10,7 @@ public class SouthamtonImportCommand : IDataInputCommand
 {
     public string Name { get => "DataImporter"; }
     public string Description { get => "Imports Southampton Data."; }
-
+    public IServiceScope? ServiceScope { get; set; }
     public async Task<int> Execute(string arg, string testOnly)
     {
         const OrganisationType organisationType = OrganisationType.LA;

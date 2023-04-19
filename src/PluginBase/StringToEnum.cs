@@ -49,4 +49,25 @@ public static class StringToEnum
 
         return ServiceStatusType.NotSet;
     }
+
+    public static EligibilityType ConvertEligibilityType(string str)
+    {
+        if (Enum.TryParse<EligibilityType>(str, true, out EligibilityType result))
+        {
+            return result;
+        }
+
+        return EligibilityType.NotSet;
+    }
+
+    public static FrequencyType ConvertFrequencyType(string str)
+    {
+        if (Enum.TryParse<FrequencyType>(str, true, out FrequencyType result))
+        {
+            return result;
+        }
+
+        return FrequencyType.NotSet;
+
+    }
 }
