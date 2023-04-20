@@ -11,6 +11,7 @@ using SouthamptonImporter;
 using FamilyHubs.DataImporter.Infrastructure;
 using SalfordImporter.Services;
 using static System.Formats.Asn1.AsnWriter;
+using PublicPartnershipImporter;
 
 //https://thecodeblogger.com/2022/09/16/net-dependency-injection-one-interface-and-multiple-implementations/
 
@@ -35,6 +36,7 @@ namespace FamilyHubs.DataImporter
             .AddScoped<IDataInputCommand, PlacecubeImporterCommand>()
             .AddScoped<IDataInputCommand, SouthamtonImportCommand>()
             .AddScoped<IDataInputCommand, SalfordImportCommand>()
+            .AddScoped<IDataInputCommand, PublicPartnershipImportCommand>()
             .RegisterAppDbContext(Configuration)
             .BuildServiceProvider();
 
