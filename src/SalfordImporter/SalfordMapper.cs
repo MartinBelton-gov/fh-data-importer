@@ -14,7 +14,7 @@ namespace SalfordImporter;
 
 internal class SalfordMapper : BaseMapper
 {
-    public string Name => "Buckinghamshire Mapper";
+    public string Name => "Salford Mapper";
 
     private readonly ISalfordClientService _salfordClientService;
     private readonly IPostcodeLocationClientService _postcodeLocationClientService;
@@ -77,11 +77,6 @@ internal class SalfordMapper : BaseMapper
         }
         else
         {
-            if (string.IsNullOrEmpty(salfordRecord.title))
-            {
-                System.Diagnostics.Debug.WriteLine("Got Here");
-            }
-
             const OrganisationType organisationType = OrganisationType.VCFS;
             serviceDirectoryOrganisation = new OrganisationWithServicesDto
             {
