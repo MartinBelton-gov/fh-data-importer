@@ -62,9 +62,12 @@ public class PublicPartnershipMapper : BaseMapper
         OrganisationWithServicesDto serviceDirectoryOrganisation = default!;
 
         bool newOrganisation = false;
-        if (_dictOrganisations.ContainsKey($"{_adminAreaCode}{content.organization.name}"))
+        string key = content.organization.name != null ? content.organization.name : content.organization.id;
+        key = $"{_adminAreaCode}{key}";
+
+        if (_dictOrganisations.ContainsKey(key))
         {
-            serviceDirectoryOrganisation = _dictOrganisations[$"{_adminAreaCode}{content.organization.name}"];
+            serviceDirectoryOrganisation = _dictOrganisations[key];
             //Get latest
             serviceDirectoryOrganisation = await _organisationClientService.GetOrganisationById(serviceDirectoryOrganisation.Id.ToString());
 
@@ -76,7 +79,7 @@ public class PublicPartnershipMapper : BaseMapper
             {
                 AdminAreaCode = _adminAreaCode,
                 OrganisationType = organisationType,
-                Name = content.organization.name,
+                Name = (content.organization.name != null) ? content.organization.name : content.organization.id,
                 Description = content.organization.description,
                 Logo = content.organization.logo,
                 Uri = content.organization.url,
@@ -86,7 +89,9 @@ public class PublicPartnershipMapper : BaseMapper
             newOrganisation = true;
         }
 
-        var serviceOwnerReferenceId = $"{_adminAreaCode.Replace("E", "")}{content.id}";
+        serviceDirectoryOrganisation.Name = serviceDirectoryOrganisation.Name.Truncate(252) ?? string.Empty;
+
+        var serviceOwnerReferenceId = $"{_adminAreaCode}{content.id}";
         ServiceDto? existingService = serviceDirectoryOrganisation.Services.FirstOrDefault(s => s.ServiceOwnerReferenceId == serviceOwnerReferenceId);
 
         ServiceDto serviceDto = new ServiceDto()
@@ -97,12 +102,12 @@ public class PublicPartnershipMapper : BaseMapper
             ServiceOwnerReferenceId = serviceOwnerReferenceId,
             Name = content.name,
             Description = content.description,
-            Accreditations = content.accreditations.ToString(),
-            AssuredDate = Helper.GetDateFromString(content.assured_date),
-            AttendingAccess = StringToEnum.ConvertAttendingAccessType(content.attending_access.ToString() ?? string.Empty),
-            AttendingType = StringToEnum.ConvertAttendingType(content.attending_type.ToString() ?? string.Empty),
-            DeliverableType = StringToEnum.ConvertDeliverableType(content.deliverable_type.ToString() ?? string.Empty),
-            Status = StringToEnum.ConvertServiceStatusType(content.status.ToString() ?? string.Empty),
+            Accreditations = (content.accreditations != null) ? content.accreditations.ToString() : null,
+            AssuredDate = (content.assured_date != null) ? Helper.GetDateFromString(content.assured_date) : null,
+            AttendingAccess = content.attending_access != null ? StringToEnum.ConvertAttendingAccessType(content.attending_access.ToString() ?? string.Empty) : AttendingAccessType.NotSet,
+            AttendingType = (content.attending_type != null) ? StringToEnum.ConvertAttendingType(content.attending_type.ToString() ?? string.Empty) : AttendingType.NotSet,
+            DeliverableType = (content.deliverable_type != null) ? StringToEnum.ConvertDeliverableType(content.deliverable_type.ToString() ?? string.Empty) : DeliverableType.NotSet,
+            Status = (content.status != null) ? StringToEnum.ConvertServiceStatusType(content.status.ToString() ?? string.Empty) : ServiceStatusType.Active,
             Fees = content.fees,
             CanFamilyChooseDeliveryLocation = false,
             Eligibilities = GetEligibilityDtos(content.eligibilitys, existingService),
@@ -392,6 +397,7 @@ public class PublicPartnershipMapper : BaseMapper
                 continue;
             }
 
+            
             hashLocationId.Add(serviceAtLocation.location.id);
 
             PhysicalAddresses? physicalAddress = null;
@@ -399,6 +405,9 @@ public class PublicPartnershipMapper : BaseMapper
             {
                 physicalAddress = serviceAtLocation.location.physical_addresses[0] ?? default!;
             }
+
+            if (physicalAddress == null || string.IsNullOrEmpty(physicalAddress.address_1) || string.IsNullOrEmpty(physicalAddress.postal_code))
+                continue;
 
             var newLocation = new LocationDto
             {
