@@ -204,6 +204,12 @@ internal class SouthamptonMapper : BaseMapper
                 EligibilityType = EligibilityType.NotSet
             };
 
+            newEligibility.EligibilityType = newEligibility.MaximumAge < 18 ? EligibilityType.Child : EligibilityType.NotSet;
+            if (newEligibility.MinimumAge >= 18)
+            {
+                newEligibility.EligibilityType = EligibilityType.Adult;
+            }
+
             if (existingService != null)
             {
                 var existingItem = existingService.Eligibilities.FirstOrDefault(x => x.Equals(newEligibility));

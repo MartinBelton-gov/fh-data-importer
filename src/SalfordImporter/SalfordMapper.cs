@@ -155,8 +155,13 @@ internal class SalfordMapper : BaseMapper
                     {
                         MinimumAge = numbers.ElementAt(0),
                         MaximumAge = numbers.ElementAt(1),
-                        EligibilityType = EligibilityType.NotSet
+                        EligibilityType = numbers.ElementAt(1) < 18 ? EligibilityType.Child : EligibilityType.NotSet
                     };
+
+                    if (newEligibility.MinimumAge >= 18)
+                    {
+                        newEligibility.EligibilityType = EligibilityType.Adult;
+                    }
 
                     if (existingService != null)
                     {

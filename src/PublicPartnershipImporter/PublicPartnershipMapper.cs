@@ -149,8 +149,13 @@ public class PublicPartnershipMapper : BaseMapper
             {
                 MinimumAge = minimum_age,
                 MaximumAge = maximum_age,
-                EligibilityType = EligibilityType.NotSet
+                EligibilityType = maximum_age < 18 ? EligibilityType.Child : EligibilityType.NotSet
             };
+
+            if (newEligibility.MinimumAge >= 18)
+            {
+                newEligibility.EligibilityType = EligibilityType.Adult;
+            }
 
             if (existingService != null)
             {

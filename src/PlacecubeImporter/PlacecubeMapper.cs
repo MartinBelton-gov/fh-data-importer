@@ -224,8 +224,13 @@ internal class PlacecubeMapper : BaseMapper
             {
                 MinimumAge = eligibility.minimum_age,
                 MaximumAge = eligibility.maximum_age,
-                EligibilityType = EligibilityType.NotSet
+                EligibilityType = eligibility.maximum_age < 18 ? EligibilityType.Child : EligibilityType.NotSet
             };
+
+            if (newEligibility.MinimumAge >= 18)
+            {
+                newEligibility.EligibilityType = EligibilityType.Adult;
+            }
 
             if (existingService != null)
             {
