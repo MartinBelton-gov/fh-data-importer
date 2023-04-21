@@ -146,8 +146,13 @@ internal class BuckinghamshireMapper : BaseMapper
         {
             MinimumAge = content.min_age != null ? content.min_age.Value : 0,
             MaximumAge = content.max_age != null ? content.max_age.Value : 0,
-            EligibilityType = EligibilityType.NotSet
+            EligibilityType = content.max_age < 18 ? EligibilityType.Child : EligibilityType.NotSet
         };
+
+        if (newEligibility.MinimumAge >= 18)
+        {
+            newEligibility.EligibilityType = EligibilityType.Adult;
+        }
 
         if (existingService != null)
         {
