@@ -88,7 +88,7 @@ public class BaseMapper
                 AdminAreaCode = organisation.AdminAreaCode,
                 OrganisationType = organisation.OrganisationType,
                 Name = organisation.Name,
-                Description = organisation.Description,
+                Description = organisation.Description.Truncate(496) ?? string.Empty,
                 Logo = organisation.Logo,
                 Uri = organisation.Uri,
                 Url = organisation.Url,

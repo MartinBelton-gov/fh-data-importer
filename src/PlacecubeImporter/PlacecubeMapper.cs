@@ -3,6 +3,7 @@ using FamilyHubs.ServiceDirectory.Shared.Dto;
 using FamilyHubs.ServiceDirectory.Shared.Enums;
 using PlacecubeImporter.Services;
 using PluginBase;
+using System.Text;
 
 namespace PlacecubeImporter;
 
@@ -86,7 +87,7 @@ internal class PlacecubeMapper : BaseMapper
                 AdminAreaCode = _adminAreaCode,
                 OrganisationType = organisationType,
                 Name = placecubeSimpleService.organization.name,
-                Description = placecubeSimpleService.organization.description,
+                Description = placecubeSimpleService.organization.description.Truncate(496) ?? string.Empty,
                 Logo = placecubeSimpleService.organization.logo,
                 Uri = placecubeSimpleService.organization.url,
                 Url = placecubeSimpleService.organization.url,
@@ -159,7 +160,7 @@ internal class PlacecubeMapper : BaseMapper
                 AdminAreaCode = _adminAreaCode,
                 OrganisationType = organisationType,
                 Name = placecubeService.organization.name,
-                Description = placecubeService.organization.description,
+                Description = placecubeService.organization.description.Truncate(496) ?? string.Empty,
                 Logo = placecubeService.organization.logo,
                 Uri = placecubeService.organization.url,
                 Url = placecubeService.organization.url,
@@ -547,9 +548,14 @@ internal class PlacecubeMapper : BaseMapper
                 continue;
             }
 
+            if (phone.Length > 49) 
+            {
+                phone = ExtractPhonenumber(phone);
+            }
+
             var newContact = new ContactDto
             {
-                Title = contact?.title ?? default!,
+                Title = contact?.title.Truncate(46) ?? default!,
                 Telephone = phone,
                 TextPhone = phone,
             };
@@ -645,5 +651,32 @@ internal class PlacecubeMapper : BaseMapper
         }
 
         return listTaxonomyDto;
+    }
+
+    private string ExtractPhonenumber(string value)
+    {
+       
+        StringBuilder stringBuilder = new StringBuilder();
+        bool readingNumber = false;
+        for (int i = 0; i < value.Length; i++)
+        {
+
+            if (Char.IsDigit(value[i]))
+            {
+                readingNumber = true;
+                stringBuilder.Append(value[i]);
+            }
+            else
+            {
+                if (readingNumber && value[i] == ' ')
+                {
+                    stringBuilder.Append(value[i]);
+                    continue;
+                }
+                readingNumber = false;
+            }
+        }
+
+        return stringBuilder.ToString();
     }
 }
