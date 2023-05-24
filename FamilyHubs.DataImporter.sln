@@ -25,6 +25,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PublicPartnershipImporter",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PlacecubeImporter", "src\PlacecubeImporter\PlacecubeImporter.csproj", "{9D508E71-384E-41CF-B09D-22E6A532CA4A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SportEngland", "src\SportEngland\SportEngland.csproj", "{EBFAE7F0-486B-4944-8BC4-36EAC783E14B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,6 +69,10 @@ Global
 		{9D508E71-384E-41CF-B09D-22E6A532CA4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9D508E71-384E-41CF-B09D-22E6A532CA4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9D508E71-384E-41CF-B09D-22E6A532CA4A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EBFAE7F0-486B-4944-8BC4-36EAC783E14B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EBFAE7F0-486B-4944-8BC4-36EAC783E14B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EBFAE7F0-486B-4944-8BC4-36EAC783E14B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EBFAE7F0-486B-4944-8BC4-36EAC783E14B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -81,6 +87,7 @@ Global
 		{F92F94CA-CC7E-4445-9DAB-1A17C146DAA0} = {53DF30CB-F69E-4001-ADBB-4FBE5307B8EB}
 		{B3927004-F7AD-4817-A4A8-1A96FCCE8B84} = {53DF30CB-F69E-4001-ADBB-4FBE5307B8EB}
 		{9D508E71-384E-41CF-B09D-22E6A532CA4A} = {53DF30CB-F69E-4001-ADBB-4FBE5307B8EB}
+		{EBFAE7F0-486B-4944-8BC4-36EAC783E14B} = {53DF30CB-F69E-4001-ADBB-4FBE5307B8EB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E66A96AF-8B13-4421-93B2-E9421CDB4507}
