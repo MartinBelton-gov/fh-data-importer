@@ -53,9 +53,10 @@ internal class SportEnglandImportMapper : BaseMapper
                     sportEnglandModel = await _sportEnglandClientService.GetServices(changeNumber, 100);
                     break;
                 }
-                catch
+                catch(Exception ex)
                 {
-                    System.Threading.Thread.Sleep(1000);
+                    System.Diagnostics.Debug.WriteLine(ex.Message);
+                    System.Threading.Thread.Sleep(2000);
                     retry++;
                     if (retry > maxRetry)
                     {
@@ -266,6 +267,11 @@ internal class SportEnglandImportMapper : BaseMapper
             newLocation.Address2 = null;
         }
 
+        if (string.IsNullOrEmpty(newLocation.Address1) && string.IsNullOrEmpty(newLocation.Address2))
+        {
+            newLocation.Address1 = " ";
+        }
+
         if (string.IsNullOrEmpty(newLocation.StateProvince))
         {
             newLocation.StateProvince = " ";
@@ -356,6 +362,11 @@ internal class SportEnglandImportMapper : BaseMapper
                 Name = $"{contact.forename} {contact.surname}",
                 Url = contact.website
             };
+
+            if(string.IsNullOrEmpty(newContact.Telephone))
+            {
+                newContact.Telephone = " ";
+            }
 
             if (existingService != null)
             {

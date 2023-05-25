@@ -54,7 +54,7 @@
         public string postcode { get; set; } = default!;
         public long uprn { get; set; }
         public string toid { get; set; } = default!;
-        public bool hasCarPark { get; set; }
+        public bool? hasCarPark { get; set; }
         public int carParkCapacity { get; set; }
         public bool? cyclePark { get; set; }
         public bool? cycleHire { get; set; }
@@ -216,7 +216,7 @@
         public bool yearBuiltEstimated { get; set; }
         public bool? isRefurbished { get; set; }
         public int yearRefurbished { get; set; }
-        public bool hasChangingRooms { get; set; }
+        public bool? hasChangingRooms { get; set; }
         public bool? areChangingRoomsRefurbished { get; set; }
         public int yearChangingRoomsRefurbished { get; set; }
         public Timingstype timingsType { get; set; } = default!;
@@ -355,7 +355,7 @@
 
     public class Accessdescription
     {
-        public int id { get; set; }
+        public int? id { get; set; }
         public string name { get; set; } = default!;
         public int lookupId { get; set; }
     }
