@@ -147,7 +147,7 @@ internal class SportEnglandImportMapper : BaseMapper
             Fees = null,
             CanFamilyChooseDeliveryLocation = false,
             Eligibilities = new List<EligibilityDto>(),
-            CostOptions = new List<CostOptionDto>(),
+            CostOptions = GetCostOptionDtos(data, existingService),
             RegularSchedules = new List<RegularScheduleDto>(), // GetRegularSchedules(content.regular_schedules, existingService, null),
             Contacts = GetContactDtos(data.contacts, existingService),
             Taxonomies = new List<TaxonomyDto>(), //await GetServiceTaxonomies(content.taxonomies, existingService),
@@ -187,6 +187,42 @@ internal class SportEnglandImportMapper : BaseMapper
         }
 
         
+    }
+
+    private List<CostOptionDto> GetCostOptionDtos(Data data, ServiceDto? existingService)
+    {
+        var accessibilityGroup = data.facilities.Select(x => x.accessibilityGroup).FirstOrDefault();
+        if (accessibilityGroup == null || accessibilityGroup.name == "Public Access")
+        {
+            return new List<CostOptionDto>();
+        }
+
+        List<CostOptionDto> listCostOptionDto = new List<CostOptionDto>();
+
+        var newCostOption = new CostOptionDto
+        {
+            AmountDescription = accessibilityGroup.name,
+        };
+
+        bool added = false;
+        if (existingService != null)
+        {
+            var existingItem = existingService.CostOptions.FirstOrDefault(x => x.Equals(newCostOption));
+
+            if (existingItem != null)
+            {
+                listCostOptionDto.Add(existingItem);
+                added = true;
+            }
+        }
+
+        if (!added) 
+        {
+            listCostOptionDto.Add(newCostOption);
+        }
+        
+
+        return listCostOptionDto;
     }
 
     private List<LocationDto> GetLocations(Data data, ServiceDto? existingService)
@@ -229,6 +265,7 @@ internal class SportEnglandImportMapper : BaseMapper
 
         newLocation.RegularSchedules = GetRegularSchedules(data.facilities, existingService);
 
+        bool added = false;
         if (existingService != null)
         {
             LocationDto? existingItem = existingService.Locations.FirstOrDefault(x => x.Equals(newLocation));
@@ -236,9 +273,11 @@ internal class SportEnglandImportMapper : BaseMapper
             if (existingItem != null)
             {
                 listLocationDto.Add(existingItem);
+                added = true;
             }
         }
-        else
+
+        if (!added)
         {
             listLocationDto.Add(newLocation);
         }
