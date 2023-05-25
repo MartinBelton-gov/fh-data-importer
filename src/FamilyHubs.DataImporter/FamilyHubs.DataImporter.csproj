@@ -20,6 +20,7 @@
     <ProjectReference Include="..\PublicPartnershipImporter\PublicPartnershipImporter.csproj" />
     <ProjectReference Include="..\SalfordImporter\SalfordImporter.csproj" />
     <ProjectReference Include="..\SouthamptonImporter\SouthamptonImporter.csproj" />
+    <ProjectReference Include="..\SportEngland\SportEngland.csproj" />
   </ItemGroup>
 
   <ItemGroup>

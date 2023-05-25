@@ -33,11 +33,12 @@ public class SportEnglandImportCommand : IDataInputCommand
 
         Console.WriteLine($"Starting Sport England Mapper");
 #pragma warning disable S1075 // URIs should not be hardcoded
+        IPostcodeLocationClientService postcodeLocationClientService = new PostcodeLocationClientService("http://api.postcodes.io");
         ISportEnglandClientService sportEnglandClientService = new SportEnglandClientService("https://api.activeplacespower.com/api/v1.1/");
         IOrganisationClientService organisationClientService = new OrganisationClientService(arg);
 
 
-        SportEnglandImportMapper sportEnglandImportMapper = new SportEnglandImportMapper(sportEnglandClientService, organisationClientService, sportEngland.AdminAreaCode, sportEngland.Name, sportEngland);
+        SportEnglandImportMapper sportEnglandImportMapper = new SportEnglandImportMapper(postcodeLocationClientService, sportEnglandClientService, organisationClientService, sportEngland.AdminAreaCode, sportEngland.Name, sportEngland);
 #pragma warning restore S1075 // URIs should not be hardcoded
         await sportEnglandImportMapper.AddOrUpdateServices();
         Console.WriteLine($"Finished Sport England Mapper");

@@ -222,7 +222,7 @@
         public Timingstype timingsType { get; set; } = default!;
         public DateTime? createdOn { get; set; }
         public DateTime checkedOn { get; set; }
-        public object startDate { get; set; } = default!;
+        public DateTime? startDate { get; set; } = default!; //was object
         public DateTime? openingDate { get; set; }
         public DateTime? closureDate { get; set; }
         public Closurereason1 closureReason { get; set; } = default!;

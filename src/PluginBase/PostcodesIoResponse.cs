@@ -48,9 +48,4 @@ public class Codes
     public string admin_county { get; set; } = default!;
     public string admin_ward { get; set; } = default!;
 
-    //[JsonProperty("admin_district")]
-    //public string AdminDistrict { get; set; } = default!;
-
-    //[JsonProperty("admin_county")]
-    //public string AdminCounty { get; set; } = default!;
 }
