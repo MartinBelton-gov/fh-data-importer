@@ -141,16 +141,19 @@ internal class SportEnglandImportMapper : BaseMapper
             Accreditations = null,
             AssuredDate = null,
             AttendingAccess = AttendingAccessType.NotSet,
-            AttendingType = AttendingType.NotSet,
+            AttendingType = AttendingType.Venue,
             DeliverableType = DeliverableType.NotSet,
             Status = StringToEnum.ConvertServiceStatusType("active"),
             Fees = null,
             CanFamilyChooseDeliveryLocation = false,
             Eligibilities = new List<EligibilityDto>(),
             CostOptions = GetCostOptionDtos(data, existingService),
-            RegularSchedules = new List<RegularScheduleDto>(), // GetRegularSchedules(content.regular_schedules, existingService, null),
+            RegularSchedules = new List<RegularScheduleDto>(), 
             Contacts = GetContactDtos(data.contacts, existingService),
-            Taxonomies = new List<TaxonomyDto>(), //await GetServiceTaxonomies(content.taxonomies, existingService),
+            Taxonomies = new List<TaxonomyDto>()
+            {
+                _dictTaxonomies["activities, clubs and groups"]
+            },
             Locations = GetLocations(data, existingService),
         };
         errors = await AddOrUpdateDirectoryService(newOrganisation, serviceDirectoryOrganisation, serviceDto, serviceOwnerReferenceId, errors);
@@ -191,35 +194,40 @@ internal class SportEnglandImportMapper : BaseMapper
 
     private List<CostOptionDto> GetCostOptionDtos(Data data, ServiceDto? existingService)
     {
-        var accessibilityGroup = data.facilities.Select(x => x.accessibilityGroup).FirstOrDefault();
-        if (accessibilityGroup == null || accessibilityGroup.name == "Public Access")
+        var accessibility = data.facilities.Select(x => x.accessibility).FirstOrDefault();
+        if (accessibility == null || accessibility.name == "Free Public Access")
         {
             return new List<CostOptionDto>();
         }
 
         List<CostOptionDto> listCostOptionDto = new List<CostOptionDto>();
 
-        var newCostOption = new CostOptionDto
+        if (accessibility.name.Contains("Pay") || accessibility.name.Contains("Membership"))
         {
-            AmountDescription = accessibilityGroup.name,
-        };
-
-        bool added = false;
-        if (existingService != null)
-        {
-            var existingItem = existingService.CostOptions.FirstOrDefault(x => x.Equals(newCostOption));
-
-            if (existingItem != null)
+            var newCostOption = new CostOptionDto
             {
-                listCostOptionDto.Add(existingItem);
-                added = true;
+                AmountDescription = accessibility.name,
+            };
+
+            bool added = false;
+            if (existingService != null)
+            {
+                var existingItem = existingService.CostOptions.FirstOrDefault(x => x.Equals(newCostOption));
+
+                if (existingItem != null)
+                {
+                    listCostOptionDto.Add(existingItem);
+                    added = true;
+                }
+            }
+
+            if (!added)
+            {
+                listCostOptionDto.Add(newCostOption);
             }
         }
 
-        if (!added) 
-        {
-            listCostOptionDto.Add(newCostOption);
-        }
+        
         
 
         return listCostOptionDto;
