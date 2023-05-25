@@ -67,9 +67,9 @@
         public Ownertype ownerType { get; set; } = default!;
         public Ownergroup ownerGroup { get; set; } = default!;
         public Educationphase educationPhase { get; set; } = default!;
-        public DateTime createdOn { get; set; }
-        public DateTime auditedOn { get; set; }
-        public DateTime checkedOn { get; set; }
+        public DateTime? createdOn { get; set; }
+        public DateTime? auditedOn { get; set; }
+        public DateTime? checkedOn { get; set; }
         public DateTime? startDate { get; set; }
         public DateTime? closureDate { get; set; }
         public Closurereason closureReason { get; set; } = default!;
