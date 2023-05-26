@@ -16,4 +16,8 @@
 		<PackageReference Include="RestSharp.Serializers.NewtonsoftJson" Version="108.0.3" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\FamilyHubs.DataImporter.Infrastructure\FamilyHubs.DataImporter.Infrastructure.csproj" />
+	</ItemGroup>
+
 </Project>

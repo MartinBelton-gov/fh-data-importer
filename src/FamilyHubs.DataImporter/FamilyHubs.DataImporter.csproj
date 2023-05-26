@@ -15,7 +15,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BuckingshireImporter\BuckingshireImporter.csproj" />
-    <ProjectReference Include="..\FamilyHubs.DataImporter.Infrastructure\FamilyHubs.DataImporter.Infrastructure.csproj" />
     <ProjectReference Include="..\PlacecubeImporter\PlacecubeImporter.csproj" />
     <ProjectReference Include="..\PublicPartnershipImporter\PublicPartnershipImporter.csproj" />
     <ProjectReference Include="..\SalfordImporter\SalfordImporter.csproj" />

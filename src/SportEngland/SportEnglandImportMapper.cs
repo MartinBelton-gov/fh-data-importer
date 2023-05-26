@@ -12,11 +12,11 @@ internal class SportEnglandImportMapper : BaseMapper
 
     private readonly ISportEnglandClientService _sportEnglandClientService;
     private readonly OrganisationWithServicesDto _sportEngland;
-    private readonly IPostcodeLocationClientService _postcodeLocationClientService;
-    public SportEnglandImportMapper(IPostcodeLocationClientService postcodeLocationClientService, ISportEnglandClientService sportEnglandClientService, IOrganisationClientService organisationClientService, string adminAreaCode, string key, OrganisationWithServicesDto parentLA)
+    private readonly IPostCodeCacheLookupService _postCodeCacheLookupService;
+    public SportEnglandImportMapper(IPostCodeCacheLookupService postCodeCacheLookupService, ISportEnglandClientService sportEnglandClientService, IOrganisationClientService organisationClientService, string adminAreaCode, string key, OrganisationWithServicesDto parentLA)
         : base(organisationClientService, adminAreaCode, parentLA, key)
     {
-        _postcodeLocationClientService = postcodeLocationClientService;
+        _postCodeCacheLookupService = postCodeCacheLookupService;
         _sportEnglandClientService = sportEnglandClientService;
         _sportEngland = parentLA;
     }
@@ -172,25 +172,8 @@ internal class SportEnglandImportMapper : BaseMapper
         if (string.IsNullOrEmpty(postcode))
             return _adminAreaCode;
 
-        try
-        {
-            PostcodesIoResponse postcodesIoResponse = await _postcodeLocationClientService.LookupPostcode(postcode);
-            if (postcodesIoResponse == null)
-            {
-                return _adminAreaCode;
-            }
+        return await _postCodeCacheLookupService.GetAdminCode(postcode, _adminAreaCode);
 
-            if (postcodesIoResponse.Result.Codes.admin_county == "E99999999")
-                return postcodesIoResponse.Result.Codes.admin_district;
-
-            return postcodesIoResponse.Result.Codes.admin_county;
-        }
-        catch
-        {
-            return _adminAreaCode;
-        }
-
-        
     }
 
     private List<CostOptionDto> GetCostOptionDtos(Data data, ServiceDto? existingService)

@@ -1,4 +1,5 @@
-﻿using FamilyHubs.ServiceDirectory.Shared.Dto;
+﻿using FamilyHubs.DataImporter.Infrastructure;
+using FamilyHubs.ServiceDirectory.Shared.Dto;
 using FamilyHubs.ServiceDirectory.Shared.Enums;
 using Microsoft.Extensions.DependencyInjection;
 using PluginBase;
@@ -33,12 +34,14 @@ public class SportEnglandImportCommand : IDataInputCommand
 
         Console.WriteLine($"Starting Sport England Mapper");
 #pragma warning disable S1075 // URIs should not be hardcoded
+        var db = ServiceScope?.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         IPostcodeLocationClientService postcodeLocationClientService = new PostcodeLocationClientService("http://api.postcodes.io");
         ISportEnglandClientService sportEnglandClientService = new SportEnglandClientService("https://api.activeplacespower.com/api/v1.1/");
         IOrganisationClientService organisationClientService = new OrganisationClientService(arg);
+        IPostCodeCacheLookupService postCodeCacheLookupService = new PostCodeCacheLookupService(postcodeLocationClientService, db!);
 
 
-        SportEnglandImportMapper sportEnglandImportMapper = new SportEnglandImportMapper(postcodeLocationClientService, sportEnglandClientService, organisationClientService, sportEngland.AdminAreaCode, sportEngland.Name, sportEngland);
+        SportEnglandImportMapper sportEnglandImportMapper = new SportEnglandImportMapper(postCodeCacheLookupService, sportEnglandClientService, organisationClientService, sportEngland.AdminAreaCode, sportEngland.Name, sportEngland);
 #pragma warning restore S1075 // URIs should not be hardcoded
         await sportEnglandImportMapper.AddOrUpdateServices();
         Console.WriteLine($"Finished Sport England Mapper");
