@@ -5,6 +5,7 @@ namespace PluginBase;
 public interface IPostcodeLocationClientService
 {
     Task<PostcodesIoResponse> LookupPostcode(string postcode);
+    Task<ListPostcodesIoResponse> GetNearestPostcodeFromCoordinates(double longtitude, double latitude);
 }
 public class PostcodeLocationClientService : IPostcodeLocationClientService
 {
@@ -30,5 +31,14 @@ public class PostcodeLocationClientService : IPostcodeLocationClientService
         _postCodesCache.Add(formattedPostCode, postcodesIoResponse!);
 
         return postcodesIoResponse!;
+    }
+
+    public async Task<ListPostcodesIoResponse> GetNearestPostcodeFromCoordinates(double longtitude, double latitude)
+    {
+        var request = new RestRequest($"/postcodes/?lon={longtitude}&lat={latitude}");
+
+        ListPostcodesIoResponse listpostcodesIoResponse = await _client.GetAsync<ListPostcodesIoResponse>(request, CancellationToken.None) ?? new ListPostcodesIoResponse();
+        
+        return listpostcodesIoResponse!;
     }
 }

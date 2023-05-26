@@ -103,8 +103,7 @@ internal class SportEnglandImportMapper : BaseMapper
 
         if (data.activePartnershipName != null)
         {
-            string adminAreaCode = await GetAdminCode(data.postcode);
-
+            string adminAreaCode = await _postCodeCacheLookupService.GetAdminCode(data.postcode, (data.localAuthorityCode != null) ? data.localAuthorityCode : _adminAreaCode, data.longitude, data.latitude);
 
             if (_dictOrganisations.ContainsKey($"{adminAreaCode}{data.activePartnershipName}"))
             {
@@ -165,15 +164,6 @@ internal class SportEnglandImportMapper : BaseMapper
         }
 
         return errors.Count;
-    }
-
-    private async Task<string> GetAdminCode(string postcode)
-    {
-        if (string.IsNullOrEmpty(postcode))
-            return _adminAreaCode;
-
-        return await _postCodeCacheLookupService.GetAdminCode(postcode, _adminAreaCode);
-
     }
 
     private List<CostOptionDto> GetCostOptionDtos(Data data, ServiceDto? existingService)
