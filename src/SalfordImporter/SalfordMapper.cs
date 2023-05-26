@@ -1,13 +1,10 @@
 ﻿using FamilyHubs.DataImporter.Infrastructure;
-using FamilyHubs.DataImporter.Infrastructure.Models;
 using FamilyHubs.ServiceDirectory.Shared.Dto;
 using FamilyHubs.ServiceDirectory.Shared.Enums;
 using PluginBase;
 using SalfordImporter.Services;
-using System.Numerics;
 using System.Text;
 using System.Text.Json;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SalfordImporter;
 
@@ -17,14 +14,12 @@ internal class SalfordMapper : BaseMapper
     public string Name => "Salford Mapper";
 
     private readonly ISalfordClientService _salfordClientService;
-    private readonly IPostcodeLocationClientService _postcodeLocationClientService;
-    private readonly ApplicationDbContext _applicationDbContext;
-    public SalfordMapper(ISalfordClientService salfordClientService, IOrganisationClientService organisationClientService, IPostcodeLocationClientService postcodeLocationClientService, ApplicationDbContext applicationDbContext, string adminAreaCode, string key, OrganisationWithServicesDto parentLA)
+    private readonly IPostCodeCacheLookupService _postCodeCacheLookupService;
+    public SalfordMapper(ISalfordClientService salfordClientService, IOrganisationClientService organisationClientService, IPostCodeCacheLookupService postCodeCacheLookupService, string adminAreaCode, string key, OrganisationWithServicesDto parentLA)
         : base(organisationClientService, adminAreaCode, parentLA, key)
     {
         _salfordClientService = salfordClientService;
-        _applicationDbContext = applicationDbContext;
-        _postcodeLocationClientService = postcodeLocationClientService;
+        _postCodeCacheLookupService = postCodeCacheLookupService;
     }
 
     public async Task AddOrUpdateServices()
@@ -465,35 +460,8 @@ internal class SalfordMapper : BaseMapper
             return (0.0, 0.0);
         }
 
-        try
-        {
-            var postcodeCache = _applicationDbContext.PostCodeCache.FirstOrDefault(x => x.PostCode == postCode);
-            if (postcodeCache != null)
-            {
-                return (postcodeCache.Latitude, postcodeCache.Longitude);
-            }
+        return await _postCodeCacheLookupService.GetCoordinates(postCode);
 
-            PostcodesIoResponse postcodesIoResponse = await _postcodeLocationClientService.LookupPostcode(postCode);
-            PostCodeCache postCodeCache = new PostCodeCache
-            {
-                PostCode = postCode,
-                AdminCounty = postcodesIoResponse.Result.Codes.admin_county,
-                AdminDistrict = postcodesIoResponse.Result.Codes.admin_district,
-                Latitude = postcodesIoResponse.Result.Latitude,
-                Longitude = postcodesIoResponse.Result.Longitude,
-            };
-
-            _applicationDbContext.PostCodeCache.Add(postCodeCache);
-            await _applicationDbContext.SaveChangesAsync();
-
-            return (postcodesIoResponse.Result.Latitude, postcodesIoResponse.Result.Longitude);
-        }
-        catch(Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine(ex);
-            Console.WriteLine($"Failed to find Postcode: {postCode} from postcodes.io return zero lat/long");
-            return (0.0, 0.0);
-        }   
     }
 
 }

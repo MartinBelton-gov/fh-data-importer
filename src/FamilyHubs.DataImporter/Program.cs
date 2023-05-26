@@ -1,17 +1,16 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using BuckingshireImporter;
+using FamilyHubs.DataImporter.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PlacecubeImporter;
 using PluginBase;
+using PublicPartnershipImporter;
 using SalfordImporter;
 using SouthamptonImporter;
-using FamilyHubs.DataImporter.Infrastructure;
-using SalfordImporter.Services;
-using static System.Formats.Asn1.AsnWriter;
-using PublicPartnershipImporter;
+using SportEngland;
 
 //https://thecodeblogger.com/2022/09/16/net-dependency-injection-one-interface-and-multiple-implementations/
 
@@ -37,6 +36,7 @@ namespace FamilyHubs.DataImporter
             .AddScoped<IDataInputCommand, SouthamtonImportCommand>()
             .AddScoped<IDataInputCommand, SalfordImportCommand>()
             .AddScoped<IDataInputCommand, PublicPartnershipImportCommand>()
+            .AddScoped<IDataInputCommand, SportEnglandImportCommand>()
             .RegisterAppDbContext(Configuration)
             .BuildServiceProvider();
 
