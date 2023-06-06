@@ -18,7 +18,6 @@ internal class BuckinghamshireMapper : BaseMapper
 
     public async Task AddOrUpdateServices()
     {
-        const int maxRetry = 3;
         const int startPage = 1;
         int errors = 0;
         await CreateOrganisationDictionary();
@@ -34,28 +33,7 @@ internal class BuckinghamshireMapper : BaseMapper
         for (int i = startPage + 1; i <= totalPages; i++)
         {
             errors = 0;
-
-            int retry = 0;
-            while (retry < maxRetry)
-            {
-                try
-                {
-                    buckinghapshireService = await _buckinghamshireClientService.GetServicesByPage(i);
-                    break;
-                }
-                catch 
-                {
-                    System.Threading.Thread.Sleep(1000);
-                    retry++;
-                    if (retry > maxRetry)
-                    {
-                        Console.WriteLine($"Failed to get page");
-                        return;
-
-                    }
-                    Console.WriteLine($"Doing retry: {retry}");
-                }
-            }
+            buckinghapshireService = await _buckinghamshireClientService.GetServicesByPage(i);
             
             foreach (var content in buckinghapshireService.content)
             {

@@ -23,7 +23,6 @@ internal class SportEnglandImportMapper : BaseMapper
 
     public async Task AddOrUpdateServices()
     {
-        const int maxRetry = 3;
         int currentPage = 1;
         int errors = 0;
         await CreateOrganisationDictionary();
@@ -45,28 +44,8 @@ internal class SportEnglandImportMapper : BaseMapper
             long changeNumber = GetChangeNumber(sportEnglandModel.next);
             if (changeNumber <= 0)
                 break;
-            int retry = 0;
-            while (retry < maxRetry)
-            {
-                try
-                {
-                    sportEnglandModel = await _sportEnglandClientService.GetServices(changeNumber, 100);
-                    break;
-                }
-                catch(Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine(ex.Message);
-                    System.Threading.Thread.Sleep(2000);
-                    retry++;
-                    if (retry > maxRetry)
-                    {
-                        Console.WriteLine($"Failed to get page");
-                        return;
 
-                    }
-                    Console.WriteLine($"Doing retry: {retry}");
-                }
-            }
+            sportEnglandModel = await _sportEnglandClientService.GetServices(changeNumber, 100);
 
             foreach (var item in sportEnglandModel.items)
             {
