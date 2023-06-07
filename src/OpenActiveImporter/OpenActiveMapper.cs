@@ -115,8 +115,8 @@ internal class OpenActiveMapper : BaseMapper
                 activities.Add(activity.prefLabel);
             }
         }
-        
-        
+
+
 
         ServiceDto serviceDto = new ServiceDto()
         {
@@ -134,6 +134,7 @@ internal class OpenActiveMapper : BaseMapper
             Status = StringToEnum.ConvertServiceStatusType("active"),
             Fees = null,
             CanFamilyChooseDeliveryLocation = false,
+            ServiceDeliveries = new List<ServiceDeliveryDto> { new ServiceDeliveryDto { Name = ServiceDeliveryType.InPerson } },
             Eligibilities = new List<EligibilityDto>(),
             CostOptions = GetCostOptionDtos(data.offers, existingService),
             RegularSchedules = new List<RegularScheduleDto>(),
