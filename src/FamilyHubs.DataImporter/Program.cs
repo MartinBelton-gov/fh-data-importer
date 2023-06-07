@@ -5,6 +5,7 @@ using FamilyHubs.DataImporter.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using OpenActiveImporter;
 using PlacecubeImporter;
 using PluginBase;
 using PublicPartnershipImporter;
@@ -37,6 +38,7 @@ namespace FamilyHubs.DataImporter
             .AddScoped<IDataInputCommand, SalfordImportCommand>()
             .AddScoped<IDataInputCommand, PublicPartnershipImportCommand>()
             .AddScoped<IDataInputCommand, SportEnglandImportCommand>()
+            .AddScoped<IDataInputCommand, OpenActiveImportCommand>()
             .RegisterAppDbContext(Configuration)
             .BuildServiceProvider();
 
