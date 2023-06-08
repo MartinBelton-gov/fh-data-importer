@@ -40,6 +40,17 @@ public class OpenActiveImportCommand : IDataInputCommand
             Url = "https://www.ledleisure.co.uk/",
         };
 
+        var bwdleisure = new OrganisationWithServicesDto
+        {
+            AdminAreaCode = "E06000008",
+            OrganisationType = organisationType,
+            Name = "BwD Leisure",
+            Description = "BwD Leisure",
+            Logo = default!,
+            Uri = "https://bwdleisure.com/",
+            Url = "https://bwdleisure.com/",
+        };
+
         //var exerciseAnywhere = new OrganisationWithServicesDto
         //{
         //    AdminAreaCode = "E06000059",
@@ -56,6 +67,7 @@ public class OpenActiveImportCommand : IDataInputCommand
             new CommandItem() { Name = activeThameside.Name, BaseUrl = "https://tameside-openactive.legendonlineservices.co.uk/api/sessions", AdminAreaCode = activeThameside.AdminAreaCode, ParentOrganisation = activeThameside, ReturnType = typeof(OpenActiveService) },
             //new CommandItem() { Name = exerciseAnywhere.Name, BaseUrl = "https://opendata.exercise-anywhere.com/api/rpde/session-series", AdminAreaCode = exerciseAnywhere.AdminAreaCode, ParentOrganisation = exerciseAnywhere },
             new CommandItem() { Name = leisureManagement.Name, BaseUrl = "https://opendata.leisurecloud.live/api/feeds/LED-live-session-series", AdminAreaCode = leisureManagement.AdminAreaCode, ParentOrganisation = leisureManagement, ReturnType = typeof(OpenActiveBasicService) },
+            new CommandItem() { Name = bwdleisure.Name, BaseUrl = "https://blackburnwithdarwen-openactive.legendonlineservices.co.uk/api/sessions", AdminAreaCode = bwdleisure.AdminAreaCode, ParentOrganisation = bwdleisure, ReturnType = typeof(OpenActiveService) },
         };
 
         foreach (var commandItem in commandItems)
