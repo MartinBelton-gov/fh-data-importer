@@ -71,63 +71,67 @@ public class Activity
     public string inScheme { get; set; } = default!;
 }
 
-public class Location
-{
-    public string identifier { get; set; } = default!;
-    public string url { get; set; } = default!;
-    public string name { get; set; } = default!;
-    public Address address { get; set; } = default!;
-    public string telephone { get; set; } = default!;
-    public Geo geo { get; set; } = default!;
-    public string type { get; set; } = default!;
-}
+//public class Location
+//{
+//    public string identifier { get; set; } = default!;
+//    public string url { get; set; } = default!;
+//    public string name { get; set; } = default!;
+//    public Address address { get; set; } = default!;
+//    public string telephone { get; set; } = default!;
+//    public Geo geo { get; set; } = default!;
+//    public string type { get; set; } = default!;
+//}
 
-public class Address
-{
-    public string streetAddress { get; set; } = default!;
-    public string addressLocality { get; set; } = default!;
-    public string addressRegion { get; set; } = default!;
-    public string postalCode { get; set; } = default!;
-    public string addressCountry { get; set; } = default!;
-    public string type { get; set; } = default!;
-}
+//public class Address
+//{
+//    public string streetAddress { get; set; } = default!;
+//    public string addressLocality { get; set; } = default!;
+//    public string addressRegion { get; set; } = default!;
+//    public string postalCode { get; set; } = default!;
+//    public string addressCountry { get; set; } = default!;
+//    public string type { get; set; } = default!;
+//}
 
-public class Geo
-{
-    public float latitude { get; set; }
-    public float longitude { get; set; }
-    public string type { get; set; } = default!;
-}
+//public class Geo
+//{
+//    public float latitude { get; set; }
+//    public float longitude { get; set; }
+//    public string type { get; set; } = default!;
+//}
 
-public class Eventschedule
-{
-    public string startDate { get; set; } = default!;
-    public string endDate { get; set; } = default!;
-    public string startTime { get; set; } = default!;
-    public string repeatFrequency { get; set; } = default!;
-    public string[] byDay { get; set; } = default!;
-    public string type { get; set; } = default!;
-}
+//public class Eventschedule
+//{
+//    public string startDate { get; set; } = default!;
+//    public string endDate { get; set; } = default!;
+//    public string startTime { get; set; } = default!;
+//    public string repeatFrequency { get; set; } = default!;
+//    public string[] byDay { get; set; } = default!;
+//    public string type { get; set; } = default!;
+//}
 
-public class Organizer
-{
-    public string name { get; set; } = default!;
-    public string email { get; set; } = default!;
-    public string type { get; set; } = default!;
-}
+//public class Organizer
+//{
+//    public string type { get; set; } = default!;
+//    public string name { get; set; } = default!;
+//    public string url { get; set; } = default!;
+//    public string telephone { get; set; } = default!;
+//    public string email { get; set; } = default!;
+//    public string[] sameAs { get; set; } = default!;
+//}
 
-public class Offer
-{
-    public string identifier { get; set; } = default!;
-    public string name { get; set; } = default!;
-    public float price { get; set; }
-    public string priceCurrency { get; set; } = default!;
-    public string type { get; set; } = default!;
-}
+//public class Offer
+//{
+//    public string identifier { get; set; } = default!;
+//    public string name { get; set; } = default!;
+//    public float price { get; set; }
+//    public string priceCurrency { get; set; } = default!;
+//    public string type { get; set; } = default!;
+//}
 
 public class Leader
 {
     public string name { get; set; } = default!;
     public string type { get; set; } = default!;
 }
+
 

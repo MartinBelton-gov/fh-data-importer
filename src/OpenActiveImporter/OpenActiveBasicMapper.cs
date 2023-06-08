@@ -2,23 +2,17 @@
 using FamilyHubs.ServiceDirectory.Shared.Enums;
 using OpenActiveImporter.Services;
 using PluginBase;
-using System.Web;
 
 namespace OpenActiveImporter;
 
-public interface IOpenActiveMapper
+internal class OpenActiveBasicMapper : BaseMapper, IOpenActiveMapper
 {
-    Task AddOrUpdateServices();
-}
+    public string Name => "Open Active Basic Mapper";
 
-internal class OpenActiveMapper : BaseMapper, IOpenActiveMapper
-{
-    public string Name => "Open Active Mapper";
-
-    private readonly IOpenActiveClientService<OpenActiveService> _openActiveClientService;
+    private readonly IOpenActiveClientService<OpenActiveBasicService> _openActiveClientService;
     private readonly OrganisationWithServicesDto _parentOrganisation;
     private readonly IPostCodeCacheLookupService _postCodeCacheLookupService;
-    public OpenActiveMapper(IPostCodeCacheLookupService postCodeCacheLookupService, IOpenActiveClientService<OpenActiveService> openActiveClientService, IOrganisationClientService organisationClientService, string adminAreaCode, string key, OrganisationWithServicesDto parentLA)
+    public OpenActiveBasicMapper(IPostCodeCacheLookupService postCodeCacheLookupService, IOpenActiveClientService<OpenActiveBasicService> openActiveClientService, IOrganisationClientService organisationClientService, string adminAreaCode, string key, OrganisationWithServicesDto parentLA)
         : base(organisationClientService, adminAreaCode, parentLA, key)
     {
         _postCodeCacheLookupService = postCodeCacheLookupService;
@@ -32,7 +26,7 @@ internal class OpenActiveMapper : BaseMapper, IOpenActiveMapper
         int errors = 0;
         await CreateOrganisationDictionary();
         await CreateTaxonomyDictionary();
-        OpenActiveService openActiveService = await _openActiveClientService.GetServices(string.Empty);
+        OpenActiveBasicService openActiveService = await _openActiveClientService.GetServices(string.Empty);
 
         foreach (var item in openActiveService.items)
         {
@@ -82,14 +76,14 @@ internal class OpenActiveMapper : BaseMapper, IOpenActiveMapper
         return string.Empty;
     }
 
-    private async Task<int> AddAndUpdateService(Data data)
+    private async Task<int> AddAndUpdateService(BasicData data)
     {
         List<string> errors = new List<string>();
 
         bool newOrganisation = false;
         OrganisationWithServicesDto serviceDirectoryOrganisation = _parentOrganisation;
 
-        string adminAreaCode = _adminAreaCode; 
+        string adminAreaCode = _adminAreaCode;
 
         if (_dictOrganisations.ContainsKey($"{adminAreaCode}{data.organizer.name}"))
         {
@@ -99,8 +93,8 @@ internal class OpenActiveMapper : BaseMapper, IOpenActiveMapper
         }
         else
         {
-            string postcode = data.superEvent.location.address.postalCode;
-            adminAreaCode = await _postCodeCacheLookupService.GetAdminCode(postcode, _adminAreaCode, data.superEvent.location.geo.longitude, data.superEvent.location.geo.latitude);
+            string postcode = data.location.address.postalCode;
+            adminAreaCode = await _postCodeCacheLookupService.GetAdminCode(postcode, _adminAreaCode, data.location.geo.longitude, data.location.geo.latitude);
 
             const OrganisationType organisationType = OrganisationType.Company;
             serviceDirectoryOrganisation = new OrganisationWithServicesDto
@@ -119,12 +113,15 @@ internal class OpenActiveMapper : BaseMapper, IOpenActiveMapper
 
         ServiceDto? existingService = serviceDirectoryOrganisation.Services.FirstOrDefault(s => s.ServiceOwnerReferenceId == serviceOwnerReferenceId);
 
-        List<string> activities = new List<string>();
-        if (data.superEvent != null && data.superEvent.superEvent != null && data.superEvent.superEvent.activity != null && data.superEvent.superEvent.activity.Any())
+        List<string> amienties = new List<string>();
+        if (data != null && data.location != null && data.location.amenityFeature != null && data.location.amenityFeature.Any())
         {
-            foreach (Activity activity in data.superEvent.superEvent.activity)
+            foreach (Amenityfeature amenityfeature in data.location.amenityFeature)
             {
-                activities.Add(activity.prefLabel);
+                if (amenityfeature.value) 
+                {
+                    amienties.Add(amenityfeature.name);
+                }
             }
         }
 
@@ -134,8 +131,8 @@ internal class OpenActiveMapper : BaseMapper, IOpenActiveMapper
             OrganisationId = serviceDirectoryOrganisation.Id,
             ServiceType = ServiceType.InformationSharing,
             ServiceOwnerReferenceId = serviceOwnerReferenceId,
-            Name = data.name,
-            Description = string.Join(',', activities),
+            Name = data?.name ?? string.Empty,
+            Description = (amienties.Any()) ? $"Has the folowing: {string.Join(',', amienties)}" : data?.name ?? string.Empty,
             Accreditations = null,
             AssuredDate = null,
             AttendingAccess = AttendingAccessType.NotSet,
@@ -145,8 +142,8 @@ internal class OpenActiveMapper : BaseMapper, IOpenActiveMapper
             Fees = null,
             CanFamilyChooseDeliveryLocation = false,
             ServiceDeliveries = new List<ServiceDeliveryDto> { new ServiceDeliveryDto { Name = ServiceDeliveryType.InPerson } },
-            Eligibilities = GetEligibilities(data,  existingService),
-            CostOptions = GetCostOptionDtos(data.offers, existingService),
+            Eligibilities = GetEligibilities(data, existingService),
+            CostOptions = GetCostOptionDtos(data?.offers, existingService),
             RegularSchedules = new List<RegularScheduleDto>(),
             Contacts = GetContacts(data, existingService),
             Taxonomies = new List<TaxonomyDto>()
@@ -166,60 +163,62 @@ internal class OpenActiveMapper : BaseMapper, IOpenActiveMapper
         return errors.Count;
     }
 
-    private List<EligibilityDto> GetEligibilities(Data data, ServiceDto? existingService)
+    private List<EligibilityDto> GetEligibilities(BasicData? data, ServiceDto? existingService)
     {
-        if (data == null || data.superEvent == null || data.superEvent.superEvent == null || data.superEvent.superEvent.ageRange == null) 
+        if (data == null || data.offers == null)
         {
             return new List<EligibilityDto>();
         }
 
         List<EligibilityDto> listEligibilities = new List<EligibilityDto>();
 
-        EligibilityDto newEligibility = new EligibilityDto
+        List<Agerange> ageranges = data.offers.Select(x => x.ageRange).ToList();
+
+
+        foreach(Agerange ageRange in ageranges) 
         {
-            MaximumAge = data.superEvent.superEvent.ageRange.maxValue,
-            MinimumAge = data.superEvent.superEvent.ageRange.minValue,
-            EligibilityType = EligibilityType.Family
-        };
+            if (ageRange == null)
+                continue;
 
-        if (newEligibility.MinimumAge >= 18)
-            newEligibility.EligibilityType = EligibilityType.Adult;
-
-        if (newEligibility.MaximumAge <= 18)
-            newEligibility.EligibilityType = EligibilityType.Child;
-
-        if (data.superEvent.superEvent.genderRestriction.Contains("Male"))
-        {
-            newEligibility.EligibilityType = EligibilityType.Male;
-        }
-        else if (data.superEvent.superEvent.genderRestriction.Contains("Female"))
-        {
-            newEligibility.EligibilityType = EligibilityType.Female;
-        }
-
-        bool added = false;
-        if (existingService != null)
-        {
-            EligibilityDto? existingItem = existingService.Eligibilities.FirstOrDefault(x => x.Equals(newEligibility));
-
-            if (existingItem != null)
+            EligibilityDto newEligibility = new EligibilityDto
             {
-                listEligibilities.Add(existingItem);
-                added = true;
-            }
-        }
+                MaximumAge = ageRange.maxValue,
+                MinimumAge = ageRange.minValue,
+                EligibilityType = EligibilityType.Family
+            };
 
-        if (!added)
-        {
+            if (newEligibility.MinimumAge >= 18)
+                newEligibility.EligibilityType = EligibilityType.Adult;
+
+            if (newEligibility.MaximumAge <= 18)
+                newEligibility.EligibilityType = EligibilityType.Child;
+
             listEligibilities.Add(newEligibility);
+
+            //bool added = false;
+            //if (existingService != null)
+            //{
+            //    EligibilityDto? existingItem = existingService.Eligibilities.FirstOrDefault(x => x.Equals(newEligibility));
+
+            //    if (existingItem != null)
+            //    {
+            //        listEligibilities.Add(existingItem);
+            //        added = true;
+            //    }
+            //}
+
+            //if (!added)
+            //{
+            //    listEligibilities.Add(newEligibility);
+            //}
         }
 
         return listEligibilities;
     }
 
-    private List<LocationDto> GetLocations(Data data, ServiceDto? existingService)
+    private List<LocationDto> GetLocations(BasicData? data, ServiceDto? existingService)
     {
-        if (string.IsNullOrEmpty(data.superEvent.location.address.postalCode))
+        if (data == null || data.location == null || data.location.address == null || string.IsNullOrEmpty(data.location.address.postalCode))
         {
             return new List<LocationDto>();
         }
@@ -229,16 +228,16 @@ internal class OpenActiveMapper : BaseMapper, IOpenActiveMapper
         var newLocation = new LocationDto
         {
             LocationType = LocationType.NotSet,
-            Name = data.superEvent.location.name,
-            Description = $"{data.superEvent.location.name} - {data.superEvent.location.address.postalCode}",
-            Longitude = data.superEvent.location.geo.longitude,
-            Latitude = data.superEvent.location.geo.latitude,
-            Address1 = data.superEvent.location.address.streetAddress,
-            Address2 = data.superEvent.location.address.addressLocality,
-            City = data.superEvent.location.address.addressRegion,
-            PostCode = data.superEvent.location.address.postalCode,
+            Name = data.location.name,
+            Description = $"{data.location.name} - {data.location.address.postalCode}",
+            Longitude = data.location.geo.longitude,
+            Latitude = data.location.geo.latitude,
+            Address1 = data.location.address.streetAddress,
+            Address2 = data.location.address.addressLocality,
+            City = data.location.address.addressRegion,
+            PostCode = data.location.address.postalCode,
             Country = "England",
-            StateProvince = data.superEvent.location.address.addressRegion,
+            StateProvince = data.location.address.addressRegion,
         };
 
         if (string.IsNullOrEmpty(newLocation.Address1) && !string.IsNullOrEmpty(newLocation.Address2))
@@ -257,7 +256,7 @@ internal class OpenActiveMapper : BaseMapper, IOpenActiveMapper
             newLocation.StateProvince = " ";
         }
 
-        newLocation.RegularSchedules = GetRegularSchedules(data.superEvent.eventSchedule, existingService);
+        newLocation.RegularSchedules = GetRegularSchedules(data.eventSchedule, existingService);
 
         bool added = false;
         if (existingService != null)
@@ -281,14 +280,14 @@ internal class OpenActiveMapper : BaseMapper, IOpenActiveMapper
 
     private List<RegularScheduleDto> GetRegularSchedules(Eventschedule[] eventschedules, ServiceDto? existingService)
     {
-        if (eventschedules  == null || !eventschedules.Any())
+        if (eventschedules == null || !eventschedules.Any())
         {
             return new List<RegularScheduleDto>();
         }
 
         List<RegularScheduleDto> listRegularScheduleDto = new List<RegularScheduleDto>();
 
-        foreach(Eventschedule eventschedule in eventschedules) 
+        foreach (Eventschedule eventschedule in eventschedules)
         {
             List<string> days = new List<string>();
             foreach (string item in eventschedule.byDay)
@@ -322,7 +321,7 @@ internal class OpenActiveMapper : BaseMapper, IOpenActiveMapper
         return listRegularScheduleDto;
     }
 
-    private List<CostOptionDto> GetCostOptionDtos(Offer[] offers, ServiceDto? existingService)
+    private List<CostOptionDto> GetCostOptionDtos(Offer[]? offers, ServiceDto? existingService)
     {
         if (offers == null || !offers.Any())
         {
@@ -331,12 +330,12 @@ internal class OpenActiveMapper : BaseMapper, IOpenActiveMapper
 
         List<CostOptionDto> listCostOptionDto = new List<CostOptionDto>();
 
-        foreach (Offer offer in offers) 
+        foreach (Offer offer in offers)
         {
             var newCostOption = new CostOptionDto
             {
                 AmountDescription = $"{offer.name} £{offer.price}",
-                Amount = (decimal)offer.price        
+                Amount = (decimal)offer.price
             };
 
             bool added = false;
@@ -360,9 +359,9 @@ internal class OpenActiveMapper : BaseMapper, IOpenActiveMapper
         return listCostOptionDto;
     }
 
-    private List<ContactDto> GetContacts(Data data, ServiceDto? existingService)
+    private List<ContactDto> GetContacts(BasicData? data, ServiceDto? existingService)
     {
-        if (data.superEvent == null || data.superEvent.location == null || string.IsNullOrEmpty(data.superEvent.location.telephone))
+        if (data == null || data.location == null || string.IsNullOrEmpty(data.location.telephone))
         {
             return new List<ContactDto>();
         }
@@ -371,8 +370,8 @@ internal class OpenActiveMapper : BaseMapper, IOpenActiveMapper
 
         var newContact = new ContactDto
         {
-            Name = data.superEvent.location.name,
-            Telephone = data.superEvent.location.telephone,
+            Name = data.location.name,
+            Telephone = data.location.telephone,
         };
 
         bool added = false;
