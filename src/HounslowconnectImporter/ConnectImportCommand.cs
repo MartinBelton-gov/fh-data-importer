@@ -17,7 +17,7 @@ public class ConnectImportCommand : IDataInputCommand
     public async Task<int> Execute(string arg, string testOnly)
     {
         const OrganisationType organisationType = OrganisationType.LA;
-        OrganisationWithServicesDto activeThameside = new OrganisationWithServicesDto
+        OrganisationWithServicesDto hounslow = new OrganisationWithServicesDto
         {
             AdminAreaCode = "E09000018",
             OrganisationType = organisationType,
@@ -28,10 +28,22 @@ public class ConnectImportCommand : IDataInputCommand
             Url = "https://www.hounslow.gov.uk/",
         };
 
+        OrganisationWithServicesDto sutton = new OrganisationWithServicesDto
+        {
+            AdminAreaCode = "E09000018",
+            OrganisationType = organisationType,
+            Name = "London Borough of Sutton",
+            Description = "London Borough of Sutton",
+            Logo = default!,
+            Uri = "https://www.sutton.gov.uk/",
+            Url = "https://www.sutton.gov.uk/",
+        };
+
         List<CommandItem> commandItems = new()
         {
-            new CommandItem() { Name = activeThameside.Name, BaseUrl = "https://api.hounslowconnect.com/core/v1/", AdminAreaCode = activeThameside.AdminAreaCode, ParentOrganisation = activeThameside, ReturnType = typeof(ConnectService) },
-            
+            new CommandItem() { Name = hounslow.Name, BaseUrl = "https://api.hounslowconnect.com/core/v1/", AdminAreaCode = hounslow.AdminAreaCode, ParentOrganisation = hounslow, ReturnType = typeof(ConnectService) },
+            new CommandItem() { Name = sutton.Name, BaseUrl = "https://api.suttoninformationhub.org.uk/core/v1/", AdminAreaCode = sutton.AdminAreaCode, ParentOrganisation = sutton, ReturnType = typeof(ConnectService) },
+
         };
 
         foreach (var commandItem in commandItems)
