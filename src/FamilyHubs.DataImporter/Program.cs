@@ -13,6 +13,7 @@ using PublicPartnershipImporter;
 using SalfordImporter;
 using SouthamptonImporter;
 using SportEngland;
+using System.Threading.Tasks;
 
 //https://thecodeblogger.com/2022/09/16/net-dependency-injection-one-interface-and-multiple-implementations/
 
@@ -73,11 +74,26 @@ namespace FamilyHubs.DataImporter
             IEnumerable<IDataInputCommand> services = serviceProvider.GetServices<IDataInputCommand>();
             string servicedirectoryBaseUrl = Configuration["ApplicationServiceApi:ServiceDirectoryUrl"] ?? default!;
             string importerToTest = Configuration["ImporterToTest"] ?? default!;
-            foreach (var service in services)
+            if (Configuration["RunAsync"] == "True")
             {
-                service.ServiceScope = scope;
-                await service.Execute(servicedirectoryBaseUrl, importerToTest);
+                List<Task> taskList = new List<Task>();
+                foreach (var service in services)
+                {
+                    service.ServiceScope = scope;
+                    taskList.Add(service.Execute(servicedirectoryBaseUrl, importerToTest));
+                }
+
+                await Task.WhenAll(taskList);
             }
+            else
+            {
+                foreach (var service in services)
+                {
+                    service.ServiceScope = scope;
+                    await service.Execute(servicedirectoryBaseUrl, importerToTest);
+                }
+            }
+            
         }
     }
 }
