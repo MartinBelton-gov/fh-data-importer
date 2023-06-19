@@ -144,13 +144,13 @@ public class ConnectMapper : BaseMapper, IConnectMapper
             AssuredDate = default!,
             AttendingAccess = default!, // todo StringToEnum.ConvertAttendingAccessType(placecubeService.attending_access),
             AttendingType = default!, // todo StringToEnum.ConvertAttendingType(placecubeService.attending_type),
-            DeliverableType = default!, // todo StringToEnum.ConvertDeliverableType(placecubeService.deliverable_type),
+            DeliverableType = DeliverableType.Information, // todo StringToEnum.ConvertDeliverableType(placecubeService.deliverable_type),
             Status = StringToEnum.ConvertServiceStatusType(data.status),
             Fees = data.fees_text,
             CanFamilyChooseDeliveryLocation = false,
             Eligibilities = GetEligibilityDtos(data.eligibility_types.custom, existingService),
             CostOptions = GetCostOptionDtos(data, existingService),
-            //ServiceAreas = GetServiceAreas(placecubeService.service_areas, existingService),
+            ServiceAreas = GetServiceAreas(serviceDirectoryOrganisation.Name, existingService),
             //Fundings = GetFundings(placecubeService.fundings, existingService),
             //RegularSchedules = GetRegularSchedules(placecubeService.regular_schedules, existingService, null),
             //HolidaySchedules = GetHolidaySchedules(placecubeService.holiday_schedules, existingService, null),
@@ -183,6 +183,38 @@ public class ConnectMapper : BaseMapper, IConnectMapper
             return parts[1];
 
         return string.Empty;
+    }
+
+    private List<ServiceAreaDto> GetServiceAreas(string serviceArea, ServiceDto? existingService)
+    {
+        if (string.IsNullOrEmpty(serviceArea))
+        {
+            return new List<ServiceAreaDto>();
+        }
+
+        List<ServiceAreaDto> listServiceAreaDto = new List<ServiceAreaDto>();
+
+        
+        var newServiceArea = new ServiceAreaDto
+        {
+            ServiceAreaName = serviceArea,
+        };
+
+        if (existingService != null)
+        {
+            var existing = existingService.ServiceAreas.FirstOrDefault(x => x.Equals(newServiceArea));
+
+            if (existing != null)
+            {
+                listServiceAreaDto.Add(existing);
+                return listServiceAreaDto;
+            }
+        }
+
+        listServiceAreaDto.Add(newServiceArea);
+       
+
+        return listServiceAreaDto;
     }
 
     private List<LanguageDto> GetLanguageDtos(Datum data, ServiceDto? existingService)
