@@ -2,6 +2,7 @@
 
 using BuckingshireImporter;
 using FamilyHubs.DataImporter.Infrastructure;
+using HounslowconnectImporter;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -39,6 +40,7 @@ namespace FamilyHubs.DataImporter
             .AddScoped<IDataInputCommand, PublicPartnershipImportCommand>()
             .AddScoped<IDataInputCommand, SportEnglandImportCommand>()
             .AddScoped<IDataInputCommand, OpenActiveImportCommand>()
+            .AddScoped<IDataInputCommand, ConnectImportCommand>()
             .RegisterAppDbContext(Configuration)
             .BuildServiceProvider();
 
