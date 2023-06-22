@@ -1,7 +1,11 @@
 ﻿using BuckingshireImporter;
 using FamilyHub.DataImporter.Web.Data;
+using FamilyHubs.DataImporter.Infrastructure;
 using HounslowconnectImporter;
 using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using OpenActiveImporter;
 using PlacecubeImporter;
 using PluginBase;
@@ -36,6 +40,10 @@ public static class StartupExtensions
         services.AddServerSideBlazor();
         services.AddSingleton<WeatherForecastService>();
         services.AddSingleton<DataImportApiService>();
+
+        services.RegisterAppDbContext(configuration);
+
+        services.RegisterImportComponents(configuration);
     }
 
     public static void RegisterImportComponents(this IServiceCollection services, IConfiguration configuration)
@@ -48,6 +56,40 @@ public static class StartupExtensions
         services.AddScoped<IDataInputCommand, SportEnglandImportCommand>();
         services.AddScoped<IDataInputCommand, OpenActiveImportCommand>();
         services.AddScoped<IDataInputCommand, ConnectImportCommand>();
+    }
+
+    public static IServiceCollection RegisterAppDbContext(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddTransient<ApplicationDbContextInitialiser>();
+        var connectionString = configuration.GetConnectionString("PostCodeConnection");
+        ArgumentException.ThrowIfNullOrEmpty(connectionString);
+
+        var connection = new SqliteConnectionStringBuilder(connectionString).ToString();
+
+        services.AddDbContext<ApplicationDbContext>(options =>
+        {
+            options.UseSqlite(connection, mg =>
+                    mg.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.ToString()));
+        });
+
+        return services;
+    }
+
+    public static async Task ConfigureDb(this WebApplication app, IConfiguration configuration, Serilog.ILogger logger)
+    {
+        using var scope = app.Services.CreateScope();
+
+        try
+        {
+            // Init Database
+            var initialiser = scope.ServiceProvider.GetRequiredService<ApplicationDbContextInitialiser>();
+            var shouldRestDatabaseOnRestart = configuration.GetValue<bool>("ShouldClearDatabaseOnRestart");
+            await initialiser.InitialiseAsync(shouldRestDatabaseOnRestart);
+        }
+        catch (Exception ex)
+        {
+            logger.Error(ex, "An error occurred seeding the DB. {exceptionMessage}", ex.Message);
+        }
     }
 
     public static async Task ConfigureWebApplication(this WebApplication app)

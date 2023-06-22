@@ -1,30 +1,44 @@
-using BuckingshireImporter;
 using FamilyHub.DataImporter.Web;
-using FamilyHub.DataImporter.Web.Data;
-using HounslowconnectImporter;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
-using OpenActiveImporter;
-using PlacecubeImporter;
-using PluginBase;
-using PublicPartnershipImporter;
-using SalfordImporter;
-using SouthamptonImporter;
-using SportEngland;
+using Serilog;
 
-var builder = WebApplication.CreateBuilder(args);
+Log.Logger = new LoggerConfiguration()
+            .WriteTo.Console()
+            .CreateBootstrapLogger();
 
-builder.ConfigureHost();
+Log.Information("Starting up");
 
-builder.Services.RegisterApplicationComponents(builder.Configuration);
+try
+{
+    var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.RegisterApplicationComponents(builder.Configuration);
+    builder.ConfigureHost();
+
+    builder.Services.RegisterApplicationComponents(builder.Configuration);
+
+    // Add services to the container.
+    builder.Services.RegisterApplicationComponents(builder.Configuration);
 
 
-var app = builder.Build();
+    var app = builder.Build();
 
-await app.ConfigureWebApplication();
+    await app.ConfigureDb(builder.Configuration, Log.Logger);
 
-await app.RunAsync();
+    await app.ConfigureWebApplication();
+
+    await app.RunAsync();
+}
+catch (Exception e)
+{
+    if (e.GetType().Name.Equals("HostAbortedException", StringComparison.Ordinal))
+    {
+        //this error only occurs when DB migration is running on its own
+        throw;
+    }
+
+    Log.Fatal(e, "An unhandled exception occurred during bootstrapping");
+}
+finally
+{
+    Log.CloseAndFlush();
+}
+
