@@ -9,13 +9,15 @@ namespace PlacecubeImporter;
 
 internal class PlacecubeMapper : BaseMapper
 {
+    private readonly IDataInputCommand _dataInputCommand;
     private readonly IPlacecubeClientService _placecubeClientService;
      
     public string Name => "Placecube Mapper";
 
-    public PlacecubeMapper(IPlacecubeClientService placecubeClientService, IOrganisationClientService organisationClientService, IMapper mapper, string adminAreaCode, string key, OrganisationWithServicesDto parentLA)
+    public PlacecubeMapper(IDataInputCommand dataInputCommand, IPlacecubeClientService placecubeClientService, IOrganisationClientService organisationClientService, IMapper mapper, string adminAreaCode, string key, OrganisationWithServicesDto parentLA)
         : base(organisationClientService, adminAreaCode, parentLA, key)
     {
+        _dataInputCommand = dataInputCommand;
         _placecubeClientService = placecubeClientService;
     }
 
@@ -51,6 +53,7 @@ internal class PlacecubeMapper : BaseMapper
             catch
             {
                 Console.WriteLine($"This is only a simple service id: {itemId}");
+                _dataInputCommand.Progress = $"This is only a simple service id: {itemId}";
                 errorCount += await AddAndUpdateSimpleService(elmbridgeSimpleService.content[itemCount]);
             }
         }

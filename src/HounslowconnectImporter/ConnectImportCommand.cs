@@ -2,7 +2,6 @@
 using FamilyHubs.ServiceDirectory.Shared.Dto;
 using FamilyHubs.ServiceDirectory.Shared.Enums;
 using HounslowconnectImporter.Services;
-using Microsoft.Extensions.DependencyInjection;
 using PluginBase;
 
 namespace HounslowconnectImporter;
@@ -12,7 +11,9 @@ public class ConnectImportCommand : IDataInputCommand
 {
     public string Name { get => "DataImporter"; }
     public string Description { get => "Imports Data."; }
-    public IServiceScope? ServiceScope { get; set; }
+
+    public ApplicationDbContext? ApplicationDbContext { get; set; }
+    public string Progress { get; set; } = default!;
 
     public async Task<int> Execute(string arg, string testOnly)
     {
@@ -64,12 +65,11 @@ public class ConnectImportCommand : IDataInputCommand
 
     private IConnectMapper CreateMapper(string arg, CommandItem commandItem)
     {
-        var db = ServiceScope?.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 #pragma warning disable S1075 // URIs should not be hardcoded
         IPostcodeLocationClientService postcodeLocationClientService = new PostcodeLocationClientService("http://api.postcodes.io");
 #pragma warning restore S1075 // URIs should not be hardcoded        
         IOrganisationClientService organisationClientService = new OrganisationClientService(arg);
-        IPostCodeCacheLookupService postCodeCacheLookupService = new PostCodeCacheLookupService(postcodeLocationClientService, db!);
+        IPostCodeCacheLookupService postCodeCacheLookupService = new PostCodeCacheLookupService(postcodeLocationClientService, ApplicationDbContext!);
 
         IConnectMapper mapper;
 
@@ -79,7 +79,7 @@ public class ConnectImportCommand : IDataInputCommand
             default:
                 {
                     IConnectClientService<ConnectService> clientService = new ConnectClientService<ConnectService>(commandItem.BaseUrl);
-                    mapper = new ConnectMapper(postCodeCacheLookupService, clientService, organisationClientService, commandItem.AdminAreaCode, commandItem.Name, commandItem.ParentOrganisation);
+                    mapper = new ConnectMapper(this,postCodeCacheLookupService, clientService, organisationClientService, commandItem.AdminAreaCode, commandItem.Name, commandItem.ParentOrganisation);
                 }
                 break;
         }

@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using System.Threading.Tasks;
+﻿using FamilyHubs.DataImporter.Infrastructure;
 
 namespace PluginBase
 {
@@ -7,8 +6,8 @@ namespace PluginBase
     {
         string Name { get; }
         string Description { get; }
-        
-        IServiceScope? ServiceScope { get; set;  }
+        string Progress { get; set; }
+        public ApplicationDbContext? ApplicationDbContext { get; set; }
 
         Task<int> Execute(string arg, string testOnly);
     }

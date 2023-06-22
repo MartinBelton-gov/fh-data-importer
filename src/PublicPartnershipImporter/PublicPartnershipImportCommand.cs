@@ -1,4 +1,5 @@
-﻿using FamilyHubs.ServiceDirectory.Shared.Dto;
+﻿using FamilyHubs.DataImporter.Infrastructure;
+using FamilyHubs.ServiceDirectory.Shared.Dto;
 using FamilyHubs.ServiceDirectory.Shared.Enums;
 using Microsoft.Extensions.DependencyInjection;
 using PluginBase;
@@ -10,7 +11,8 @@ public class PublicPartnershipImportCommand : IDataInputCommand
 {
     public string Name { get => "DataImporter"; }
     public string Description { get => "Imports some other Data."; }
-    public IServiceScope? ServiceScope { get; set; }
+    public string Progress { get; set; } = default!;
+    public ApplicationDbContext? ApplicationDbContext { get; set; }
 
     public async Task<int> Execute(string arg, string testOnly)
     {
@@ -36,7 +38,7 @@ public class PublicPartnershipImportCommand : IDataInputCommand
         IPublicPartnershipClientService publicPartnershipClientService = new PublicPartnershipClientService("https://lgaapi.connecttosupport.org/");
         IOrganisationClientService organisationClientService = new OrganisationClientService(arg);
 
-        PublicPartnershipMapper publicPartnershipMapper = new PublicPartnershipMapper(publicPartnershipClientService, organisationClientService, hullCouncil.AdminAreaCode, hullCouncil.Name, hullCouncil);
+        PublicPartnershipMapper publicPartnershipMapper = new PublicPartnershipMapper(this, publicPartnershipClientService, organisationClientService, hullCouncil.AdminAreaCode, hullCouncil.Name, hullCouncil);
         
 #pragma warning restore S1075 // URIs should not be hardcoded
         await publicPartnershipMapper.AddOrUpdateServices();

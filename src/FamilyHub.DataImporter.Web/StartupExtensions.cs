@@ -6,6 +6,7 @@ using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using OpenActiveImporter;
 using PlacecubeImporter;
 using PluginBase;
@@ -39,23 +40,10 @@ public static class StartupExtensions
         services.AddRazorPages();
         services.AddServerSideBlazor();
         services.AddSingleton<WeatherForecastService>();
-        services.AddSingleton<DataImportApiService>();
 
         services.RegisterAppDbContext(configuration);
 
-        services.RegisterImportComponents(configuration);
-    }
-
-    public static void RegisterImportComponents(this IServiceCollection services, IConfiguration configuration)
-    {
-        services.AddScoped<IDataInputCommand, BuckingshireImportCommand>();
-        services.AddScoped<IDataInputCommand, PlacecubeImporterCommand>();
-        services.AddScoped<IDataInputCommand, SouthamtonImportCommand>();
-        services.AddScoped<IDataInputCommand, SalfordImportCommand>();
-        services.AddScoped<IDataInputCommand, PublicPartnershipImportCommand>();
-        services.AddScoped<IDataInputCommand, SportEnglandImportCommand>();
-        services.AddScoped<IDataInputCommand, OpenActiveImportCommand>();
-        services.AddScoped<IDataInputCommand, ConnectImportCommand>();
+        services.AddTransient<DataImportApiService>();
     }
 
     public static IServiceCollection RegisterAppDbContext(this IServiceCollection services, IConfiguration configuration)
@@ -81,6 +69,7 @@ public static class StartupExtensions
 
         try
         {
+            
             // Init Database
             var initialiser = scope.ServiceProvider.GetRequiredService<ApplicationDbContextInitialiser>();
             var shouldRestDatabaseOnRestart = configuration.GetValue<bool>("ShouldClearDatabaseOnRestart");
@@ -92,7 +81,7 @@ public static class StartupExtensions
         }
     }
 
-    public static async Task ConfigureWebApplication(this WebApplication app)
+    public static void ConfigureWebApplication(this WebApplication app)
     {
         app.UseSerilogRequestLogging();
 

@@ -12,8 +12,9 @@ public class SalfordImportCommand : IDataInputCommand
 {
     public string Name { get => "DataImporter"; }
     public string Description { get => "Imports Buckinghamshire Data."; }
+    public string Progress { get; set; } = default!;
 
-    public IServiceScope? ServiceScope { get; set; }
+    public ApplicationDbContext? ApplicationDbContext { get; set; }
 
     public async Task<int> Execute(string arg, string testOnly)
     {
@@ -36,13 +37,12 @@ public class SalfordImportCommand : IDataInputCommand
 
         Console.WriteLine($"Starting Salford Mapper");
 #pragma warning disable S1075 // URIs should not be hardcoded
-        var db = ServiceScope?.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         ISalfordClientService salfordClientService = new SalfordClientService("https://api.openobjects.com/v2/salforddirectory/records");
         IOrganisationClientService organisationClientService = new OrganisationClientService(arg);
         IPostcodeLocationClientService postcodeLocationClientService = new PostcodeLocationClientService("http://api.postcodes.io");
-        IPostCodeCacheLookupService postCodeCacheLookupService = new PostCodeCacheLookupService(postcodeLocationClientService, db!);
+        IPostCodeCacheLookupService postCodeCacheLookupService = new PostCodeCacheLookupService(postcodeLocationClientService, ApplicationDbContext!);
 
-        SalfordMapper salfordMapper = new SalfordMapper(salfordClientService, organisationClientService, postCodeCacheLookupService, salfordCouncil.AdminAreaCode, salfordCouncil.Name, salfordCouncil);
+        SalfordMapper salfordMapper = new SalfordMapper(this, salfordClientService, organisationClientService, postCodeCacheLookupService, salfordCouncil.AdminAreaCode, salfordCouncil.Name, salfordCouncil);
 #pragma warning restore S1075 // URIs should not be hardcoded
         await salfordMapper.AddOrUpdateServices();
         Console.WriteLine($"Finished Salford Mapper");

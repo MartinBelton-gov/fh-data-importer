@@ -19,6 +19,7 @@ else
                 <th>Supplier</th>
                 <th>Start</th>
                 <th>Stop</th>
+                <th>Progress</th>
             </tr>
         </thead>
         <tbody>
@@ -27,8 +28,9 @@ else
                 <tr>
                     <td>@importType.Name</td>
                     <td>@importType.Supplier</td>
-                    <td><button class="btn btn-primary" @onclick="@(e => StartProcess(importType.Name))">Start</button></td>
-                    <td><button class="btn btn-primary" @onclick="@(e => StopProcess(importType.Name))">Stop</button></td>
+                    <td><button class="btn btn-primary" disabled="@IsDisabled(importType.Name)" @onclick="@(e => StartProcess(importType.Name))">Start</button></td>
+                    <td><button class="btn btn-primary" disabled="!@IsDisabled(importType.Name)" @onclick="@(e => StopProcess(importType.Name))">Stop</button></td>
+                    <td>@GetProgress(importType.Name)</td>
                 </tr>
             }
         </tbody>
@@ -37,6 +39,7 @@ else
 
 @code {
     private ImportType[]? importTypes;
+    public Dictionary<string, string> Progress = new Dictionary<string, string>(); 
 
     protected override async Task OnInitializedAsync()
     {
@@ -45,14 +48,49 @@ else
 
     private void StartProcess(string name)
     {
-        
+        var taskitem = ImportApiService.StartImport(name);
+        if (taskitem != null)
+        {
+            while(taskitem.ItemTask.IsCompleted)
+            {
+                if (!Progress.ContainsKey(taskitem.ImportType.Name))
+                {
+                    Progress[taskitem.ImportType.Name] = taskitem.ImportType.DataInputCommand.Progress;
+
+                    InvokeAsync(StateHasChanged).ConfigureAwait(false);
+                }
+                else
+                {
+                    if (Progress[taskitem.ImportType.Name] != taskitem.ImportType.DataInputCommand.Progress)
+                    {
+                        Progress[taskitem.ImportType.Name] = taskitem.ImportType.DataInputCommand.Progress;
+
+                        InvokeAsync(StateHasChanged).ConfigureAwait(false);
+                    }
+                }
+
+            };
+        }
+
     }
 
     private void StopProcess(string name)
     {
-
+        ImportApiService.StopImport(name);
     }
-}
+
+    private bool IsDisabled(string name)
+    {
+        return ImportApiService.IsTaskRunning(name);
+    }
+
+    private string GetProgress(string name)
+    {
+        if (Progress.ContainsKey(name))
+            return Progress[name];
+
+        return string.Empty;
+    }
 }
 
 

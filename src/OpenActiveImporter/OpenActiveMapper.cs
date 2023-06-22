@@ -15,12 +15,14 @@ internal class OpenActiveMapper : BaseMapper, IOpenActiveMapper
 {
     public string Name => "Open Active Mapper";
 
+    private readonly IDataInputCommand _dataInputCommand;
     private readonly IOpenActiveClientService<OpenActiveService> _openActiveClientService;
     private readonly OrganisationWithServicesDto _parentOrganisation;
     private readonly IPostCodeCacheLookupService _postCodeCacheLookupService;
-    public OpenActiveMapper(IPostCodeCacheLookupService postCodeCacheLookupService, IOpenActiveClientService<OpenActiveService> openActiveClientService, IOrganisationClientService organisationClientService, string adminAreaCode, string key, OrganisationWithServicesDto parentLA)
+    public OpenActiveMapper(IDataInputCommand dataInputCommand, IPostCodeCacheLookupService postCodeCacheLookupService, IOpenActiveClientService<OpenActiveService> openActiveClientService, IOrganisationClientService organisationClientService, string adminAreaCode, string key, OrganisationWithServicesDto parentLA)
         : base(organisationClientService, adminAreaCode, parentLA, key)
     {
+        _dataInputCommand = dataInputCommand;
         _postCodeCacheLookupService = postCodeCacheLookupService;
         _openActiveClientService = openActiveClientService;
         _parentOrganisation = parentLA;
@@ -42,6 +44,7 @@ internal class OpenActiveMapper : BaseMapper, IOpenActiveMapper
             errors += await AddAndUpdateService(item.data);
         }
         Console.WriteLine($"Completed Page {currentPage} with {errors} errors");
+        _dataInputCommand.Progress = $"Completed Page {currentPage} with {errors} errors";
 
         do
         {

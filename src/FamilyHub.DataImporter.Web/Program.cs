@@ -23,7 +23,7 @@ try
 
     await app.ConfigureDb(builder.Configuration, Log.Logger);
 
-    await app.ConfigureWebApplication();
+    app.ConfigureWebApplication();
 
     await app.RunAsync();
 }

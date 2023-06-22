@@ -13,7 +13,8 @@ public class OpenActiveImportCommand : IDataInputCommand
 {
     public string Name { get => "DataImporter"; }
     public string Description { get => "Imports OpenActive Data Data."; }
-    public IServiceScope? ServiceScope { get; set; }
+    public ApplicationDbContext? ApplicationDbContext { get; set; }
+    public string Progress { get; set; } = default!;
 
     public async Task<int> Execute(string arg, string testOnly)
     {
@@ -88,12 +89,11 @@ public class OpenActiveImportCommand : IDataInputCommand
 
     private IOpenActiveMapper CreateMapper(string arg, CommandItem commandItem)
     {
-        var db = ServiceScope?.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 #pragma warning disable S1075 // URIs should not be hardcoded
         IPostcodeLocationClientService postcodeLocationClientService = new PostcodeLocationClientService("http://api.postcodes.io");
 #pragma warning restore S1075 // URIs should not be hardcoded        
         IOrganisationClientService organisationClientService = new OrganisationClientService(arg);
-        IPostCodeCacheLookupService postCodeCacheLookupService = new PostCodeCacheLookupService(postcodeLocationClientService, db!);
+        IPostCodeCacheLookupService postCodeCacheLookupService = new PostCodeCacheLookupService(postcodeLocationClientService, ApplicationDbContext!);
 
         IOpenActiveMapper mapper;
 
@@ -102,7 +102,7 @@ public class OpenActiveImportCommand : IDataInputCommand
             case Type t when t == typeof(OpenActiveService):
                 {
                     IOpenActiveClientService<OpenActiveService> openActiveClientService = new OpenActiveClientService<OpenActiveService>(commandItem.BaseUrl);
-                    mapper = new OpenActiveMapper(postCodeCacheLookupService, openActiveClientService, organisationClientService, commandItem.AdminAreaCode, commandItem.Name, commandItem.ParentOrganisation);
+                    mapper = new OpenActiveMapper(this, postCodeCacheLookupService, openActiveClientService, organisationClientService, commandItem.AdminAreaCode, commandItem.Name, commandItem.ParentOrganisation);
                 }
                 break;
 

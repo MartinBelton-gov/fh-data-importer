@@ -13,9 +13,11 @@ internal class SportEnglandImportMapper : BaseMapper
     private readonly ISportEnglandClientService _sportEnglandClientService;
     private readonly OrganisationWithServicesDto _sportEngland;
     private readonly IPostCodeCacheLookupService _postCodeCacheLookupService;
-    public SportEnglandImportMapper(IPostCodeCacheLookupService postCodeCacheLookupService, ISportEnglandClientService sportEnglandClientService, IOrganisationClientService organisationClientService, string adminAreaCode, string key, OrganisationWithServicesDto parentLA)
+    private readonly IDataInputCommand _dataInputCommand;
+    public SportEnglandImportMapper(IDataInputCommand dataInputCommand, IPostCodeCacheLookupService postCodeCacheLookupService, ISportEnglandClientService sportEnglandClientService, IOrganisationClientService organisationClientService, string adminAreaCode, string key, OrganisationWithServicesDto parentLA)
         : base(organisationClientService, adminAreaCode, parentLA, key)
     {
+        _dataInputCommand = dataInputCommand;
         _postCodeCacheLookupService = postCodeCacheLookupService;
         _sportEnglandClientService = sportEnglandClientService;
         _sportEngland = parentLA;
@@ -37,6 +39,7 @@ internal class SportEnglandImportMapper : BaseMapper
             errors += await AddAndUpdateService(item.data);
         }
         Console.WriteLine($"Completed Page {currentPage} with {errors} errors");
+        _dataInputCommand.Progress = $"Completed Page {currentPage} with {errors} errors";
 
         do
         {

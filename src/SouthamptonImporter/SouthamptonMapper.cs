@@ -8,12 +8,14 @@ namespace SouthamptonImporter;
 internal class SouthamptonMapper : BaseMapper
 {
     private readonly ISouthamptonClientService _southamptonClientService;
+    private readonly IDataInputCommand _dataInputCommand;
 
     public string Name => "Southampton Mapper";
 
-    public SouthamptonMapper(ISouthamptonClientService southamptonClientService, IOrganisationClientService organisationClientService, string adminAreaCode, string key, OrganisationWithServicesDto parentLA)
+    public SouthamptonMapper(IDataInputCommand dataInputCommand,ISouthamptonClientService southamptonClientService, IOrganisationClientService organisationClientService, string adminAreaCode, string key, OrganisationWithServicesDto parentLA)
         : base(organisationClientService, adminAreaCode, parentLA, key)
     {
+        _dataInputCommand = dataInputCommand;
         _southamptonClientService = southamptonClientService;
     }
 
@@ -49,6 +51,7 @@ internal class SouthamptonMapper : BaseMapper
             catch
             {
                 Console.WriteLine($"This is only a simple service id: {itemId}");
+                _dataInputCommand.Progress = $"This is only a simple service id: {itemId}";
                 errorCount += await AddAndUpdateSimpleService(simpleService.content[itemCount]);
             }
         }

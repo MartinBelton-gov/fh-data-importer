@@ -14,12 +14,14 @@ public class ConnectMapper : BaseMapper, IConnectMapper
 {
     public string Name => "Open Connect Mapper";
 
+    private readonly IDataInputCommand _dataInputCommand;
     private readonly IConnectClientService<ConnectService> _connectClientService;
     private readonly OrganisationWithServicesDto _parentOrganisation;
     private readonly IPostCodeCacheLookupService _postCodeCacheLookupService;
-    public ConnectMapper(IPostCodeCacheLookupService postCodeCacheLookupService, IConnectClientService<ConnectService> connectClientService, IOrganisationClientService organisationClientService, string adminAreaCode, string key, OrganisationWithServicesDto parentLA)
+    public ConnectMapper(IDataInputCommand dataInputCommand, IPostCodeCacheLookupService postCodeCacheLookupService, IConnectClientService<ConnectService> connectClientService, IOrganisationClientService organisationClientService, string adminAreaCode, string key, OrganisationWithServicesDto parentLA)
         : base(organisationClientService, adminAreaCode, parentLA, key)
     {
+        _dataInputCommand = dataInputCommand;
         _postCodeCacheLookupService = postCodeCacheLookupService;
         _connectClientService = connectClientService;
         _parentOrganisation = parentLA;
@@ -38,6 +40,7 @@ public class ConnectMapper : BaseMapper, IConnectMapper
             errors += await AddAndUpdateService(item);
         }
         Console.WriteLine($"Completed Page {currentPage} with {errors} errors");
+        _dataInputCommand.Progress = $"Completed Page {currentPage} with {errors} errors";
 
         do
         {

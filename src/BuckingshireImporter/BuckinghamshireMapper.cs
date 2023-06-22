@@ -9,10 +9,12 @@ internal class BuckinghamshireMapper : BaseMapper
 {
     public string Name => "Buckinghamshire Mapper";
 
+    private readonly IDataInputCommand _dataInputCommand;
     private readonly IBuckinghamshireClientService _buckinghamshireClientService;
-    public BuckinghamshireMapper(IBuckinghamshireClientService buckinghamshireClientService, IOrganisationClientService organisationClientService, string adminAreaCode, string key, OrganisationWithServicesDto parentLA)
+    public BuckinghamshireMapper(IDataInputCommand dataInputCommand, IBuckinghamshireClientService buckinghamshireClientService, IOrganisationClientService organisationClientService, string adminAreaCode, string key, OrganisationWithServicesDto parentLA)
         : base(organisationClientService, adminAreaCode, parentLA, key)
     {
+        _dataInputCommand = dataInputCommand;
         _buckinghamshireClientService = buckinghamshireClientService;
     }
 
@@ -29,7 +31,8 @@ internal class BuckinghamshireMapper : BaseMapper
             errors += await AddAndUpdateService(content);
         }
         Console.WriteLine($"Completed Page {startPage} of {totalPages} with {errors} errors");
-        
+        _dataInputCommand.Progress = $"Completed Page {startPage} of {totalPages} with {errors} errors";
+
         for (int i = startPage + 1; i <= totalPages; i++)
         {
             errors = 0;

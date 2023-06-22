@@ -11,7 +11,8 @@ public class SportEnglandImportCommand : IDataInputCommand
 {
     public string Name { get => "DataImporter"; }
     public string Description { get => "Imports Sport England Data."; }
-    public IServiceScope? ServiceScope { get; set; }
+    public string Progress { get; set; } = default!;
+    public ApplicationDbContext? ApplicationDbContext { get; set; }
 
     public async Task<int> Execute(string arg, string testOnly)
     {
@@ -34,14 +35,13 @@ public class SportEnglandImportCommand : IDataInputCommand
 
         Console.WriteLine($"Starting Sport England Mapper");
 #pragma warning disable S1075 // URIs should not be hardcoded
-        var db = ServiceScope?.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         IPostcodeLocationClientService postcodeLocationClientService = new PostcodeLocationClientService("http://api.postcodes.io");
         ISportEnglandClientService sportEnglandClientService = new SportEnglandClientService("https://api.activeplacespower.com/api/v1.1/");
         IOrganisationClientService organisationClientService = new OrganisationClientService(arg);
-        IPostCodeCacheLookupService postCodeCacheLookupService = new PostCodeCacheLookupService(postcodeLocationClientService, db!);
+        IPostCodeCacheLookupService postCodeCacheLookupService = new PostCodeCacheLookupService(postcodeLocationClientService, ApplicationDbContext!);
 
 
-        SportEnglandImportMapper sportEnglandImportMapper = new SportEnglandImportMapper(postCodeCacheLookupService, sportEnglandClientService, organisationClientService, sportEngland.AdminAreaCode, sportEngland.Name, sportEngland);
+        SportEnglandImportMapper sportEnglandImportMapper = new SportEnglandImportMapper(this, postCodeCacheLookupService, sportEnglandClientService, organisationClientService, sportEngland.AdminAreaCode, sportEngland.Name, sportEngland);
 #pragma warning restore S1075 // URIs should not be hardcoded
         await sportEnglandImportMapper.AddOrUpdateServices();
         Console.WriteLine($"Finished Sport England Mapper");

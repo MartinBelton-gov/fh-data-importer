@@ -71,6 +71,7 @@ namespace FamilyHubs.DataImporter
                 logger.LogError(ex, "An error occurred seeding the DB. {exceptionMessage}", ex.Message);
             }
 
+            var db = serviceProvider.GetRequiredService<ApplicationDbContext>();
             IEnumerable<IDataInputCommand> services = serviceProvider.GetServices<IDataInputCommand>();
             string servicedirectoryBaseUrl = Configuration["ApplicationServiceApi:ServiceDirectoryUrl"] ?? default!;
             string importerToTest = Configuration["ImporterToTest"] ?? default!;
@@ -79,7 +80,7 @@ namespace FamilyHubs.DataImporter
                 List<Task> taskList = new List<Task>();
                 foreach (var service in services)
                 {
-                    service.ServiceScope = scope;
+                    service.ApplicationDbContext = db;
                     taskList.Add(service.Execute(servicedirectoryBaseUrl, importerToTest));
                 }
 
@@ -89,7 +90,7 @@ namespace FamilyHubs.DataImporter
             {
                 foreach (var service in services)
                 {
-                    service.ServiceScope = scope;
+                    service.ApplicationDbContext = db;
                     await service.Execute(servicedirectoryBaseUrl, importerToTest);
                 }
             }

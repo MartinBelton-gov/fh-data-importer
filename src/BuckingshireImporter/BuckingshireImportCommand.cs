@@ -1,4 +1,5 @@
 ﻿using BuckingshireImporter.Services;
+using FamilyHubs.DataImporter.Infrastructure;
 using FamilyHubs.ServiceDirectory.Shared.Dto;
 using FamilyHubs.ServiceDirectory.Shared.Enums;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,7 +11,8 @@ namespace BuckingshireImporter
     {
         public string Name { get => "DataImporter"; }
         public string Description { get => "Imports Buckinghamshire Data."; }
-        public IServiceScope? ServiceScope { get; set; }
+        public ApplicationDbContext? ApplicationDbContext { get; set; }
+        public string Progress { get; set; } = default!;
 
         public async Task<int> Execute(string arg, string testOnly)
         {
@@ -39,7 +41,7 @@ namespace BuckingshireImporter
             IOrganisationClientService organisationClientService = new OrganisationClientService(arg);
 
 
-            BuckinghamshireMapper buckinghamshireMapper = new BuckinghamshireMapper(buckinghamshireClientService, organisationClientService, buckinghamshireCouncil.AdminAreaCode, buckinghamshireCouncil.Name, buckinghamshireCouncil);
+            BuckinghamshireMapper buckinghamshireMapper = new BuckinghamshireMapper(this, buckinghamshireClientService, organisationClientService, buckinghamshireCouncil.AdminAreaCode, buckinghamshireCouncil.Name, buckinghamshireCouncil);
 #pragma warning restore S1075 // URIs should not be hardcoded
             await buckinghamshireMapper.AddOrUpdateServices();
             Console.WriteLine($"Finished Buckinghamshire Mapper");

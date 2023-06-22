@@ -13,11 +13,13 @@ internal class SalfordMapper : BaseMapper
 {
     public string Name => "Salford Mapper";
 
+    private readonly IDataInputCommand _dataInputCommand;
     private readonly ISalfordClientService _salfordClientService;
     private readonly IPostCodeCacheLookupService _postCodeCacheLookupService;
-    public SalfordMapper(ISalfordClientService salfordClientService, IOrganisationClientService organisationClientService, IPostCodeCacheLookupService postCodeCacheLookupService, string adminAreaCode, string key, OrganisationWithServicesDto parentLA)
+    public SalfordMapper(IDataInputCommand dataInputCommand,ISalfordClientService salfordClientService, IOrganisationClientService organisationClientService, IPostCodeCacheLookupService postCodeCacheLookupService, string adminAreaCode, string key, OrganisationWithServicesDto parentLA)
         : base(organisationClientService, adminAreaCode, parentLA, key)
     {
+        _dataInputCommand = dataInputCommand;
         _salfordClientService = salfordClientService;
         _postCodeCacheLookupService = postCodeCacheLookupService;
     }
@@ -35,6 +37,7 @@ internal class SalfordMapper : BaseMapper
             recordNumber++;
             errors = await AddAndUpdateService(salfordRecord);
             Console.WriteLine($"Completed Record {recordNumber} of {totalrecords} with {errors} errors");
+            _dataInputCommand.Progress = $"Completed Record {recordNumber} of {totalrecords} with {errors} errors";
         }
 
         while (recordNumber + 1 < totalrecords)

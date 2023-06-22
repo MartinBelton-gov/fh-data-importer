@@ -7,13 +7,15 @@ namespace PublicPartnershipImporter;
 
 public class PublicPartnershipMapper : BaseMapper
 {
+    private readonly IDataInputCommand _dataInputCommand;
     private readonly IPublicPartnershipClientService _publicPartnershipClientService;
     
     public string Name => "PublicPartnership Mapper";
 
-    public PublicPartnershipMapper(IPublicPartnershipClientService publicPartnershipClientService, IOrganisationClientService organisationClientService, string adminAreaCode, string key, OrganisationWithServicesDto parentLA)
+    public PublicPartnershipMapper(IDataInputCommand dataInputCommand, IPublicPartnershipClientService publicPartnershipClientService, IOrganisationClientService organisationClientService, string adminAreaCode, string key, OrganisationWithServicesDto parentLA)
         : base(organisationClientService, adminAreaCode, parentLA, key)
     {
+        _dataInputCommand = dataInputCommand;
         _publicPartnershipClientService = publicPartnershipClientService;
     }
 
@@ -32,6 +34,7 @@ public class PublicPartnershipMapper : BaseMapper
         }
 
         Console.WriteLine($"Completed Page {startPage} of {totalPages} with {errorCount} errors");
+        _dataInputCommand.Progress = $"Completed Page {startPage} of {totalPages} with {errorCount} errors";
 
         for (int i = startPage + 1; i <= totalPages; i++)
         {
