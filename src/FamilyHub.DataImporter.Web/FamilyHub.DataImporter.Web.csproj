@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BuckingshireImporter\BuckingshireImporter.csproj" />
+    <ProjectReference Include="..\HounslowconnectImporter\HounslowconnectImporter.csproj" />
+    <ProjectReference Include="..\OpenActiveImporter\OpenActiveImporter.csproj" />
+    <ProjectReference Include="..\PlacecubeImporter\PlacecubeImporter.csproj" />
+    <ProjectReference Include="..\PublicPartnershipImporter\PublicPartnershipImporter.csproj" />
+    <ProjectReference Include="..\SalfordImporter\SalfordImporter.csproj" />
+    <ProjectReference Include="..\SouthamptonImporter\SouthamptonImporter.csproj" />
+    <ProjectReference Include="..\SportEngland\SportEngland.csproj" />
+  </ItemGroup>
+
+</Project>
