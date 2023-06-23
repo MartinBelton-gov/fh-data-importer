@@ -53,43 +53,6 @@ else
     {
         UpdateProgress updateProgress = new UpdateProgress(ShowProgress);
         var taskitem = ImportApiService.StartImport(name, updateProgress);
-        if (taskitem != null)
-        {
-            //updateProgress = new UpdateProgress(ShowProgress);
-            //todo: https://stackoverflow.com/questions/6169288/execute-specified-function-every-x-seconds
-            /*
-            * async Task RunInBackground(TimeSpan timeSpan, Action action)
-            {
-            var periodicTimer = new PeriodicTimer(timeSpan);
-                while (await periodicTimer.WaitForNextTickAsync())
-        {
-        action();
-        }
-        }
-
-        RunInBackground(TimeSpan.FromSeconds(1), () => Console.WriteLine("Printing"));
-            */
-            //while(taskitem.ItemTask.IsCompleted)
-            //{
-            //    if (!Progress.ContainsKey(taskitem.ImportType.Name))
-            //    {
-            //        Progress[taskitem.ImportType.Name] = taskitem.ImportType.DataInputCommand.Progress;
-
-            //        InvokeAsync(StateHasChanged).ConfigureAwait(false);
-            //    }
-            //    else
-            //    {
-            //        if (Progress[taskitem.ImportType.Name] != taskitem.ImportType.DataInputCommand.Progress)
-            //        {
-            //            Progress[taskitem.ImportType.Name] = taskitem.ImportType.DataInputCommand.Progress;
-
-            //            InvokeAsync(StateHasChanged).ConfigureAwait(false);
-            //        }
-            //    }
-
-            //};
-        }
-
     }
 
     private void StopProcess(string name)
