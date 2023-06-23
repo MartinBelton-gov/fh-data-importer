@@ -7,6 +7,7 @@ namespace PluginBase
         string Name { get; }
         string Description { get; }
         string Progress { get; set; }
+        IServiceDirectoryMapper? ServiceDirectoryMapper { get; set; }
         public ApplicationDbContext? ApplicationDbContext { get; set; }
 
         Task<int> Execute(string arg, string testOnly);

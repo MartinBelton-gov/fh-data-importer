@@ -10,6 +10,7 @@ namespace SalfordImporter;
 
 public class SalfordImportCommand : IDataInputCommand
 {
+    public IServiceDirectoryMapper? ServiceDirectoryMapper { get; set; }
     public string Name { get => "DataImporter"; }
     public string Description { get => "Imports Buckinghamshire Data."; }
     public string Progress { get; set; } = default!;
@@ -42,9 +43,9 @@ public class SalfordImportCommand : IDataInputCommand
         IPostcodeLocationClientService postcodeLocationClientService = new PostcodeLocationClientService("http://api.postcodes.io");
         IPostCodeCacheLookupService postCodeCacheLookupService = new PostCodeCacheLookupService(postcodeLocationClientService, ApplicationDbContext!);
 
-        SalfordMapper salfordMapper = new SalfordMapper(this, salfordClientService, organisationClientService, postCodeCacheLookupService, salfordCouncil.AdminAreaCode, salfordCouncil.Name, salfordCouncil);
+        ServiceDirectoryMapper = new SalfordMapper(this, salfordClientService, organisationClientService, postCodeCacheLookupService, salfordCouncil.AdminAreaCode, salfordCouncil.Name, salfordCouncil);
 #pragma warning restore S1075 // URIs should not be hardcoded
-        await salfordMapper.AddOrUpdateServices();
+        await ServiceDirectoryMapper.AddOrUpdateServices();
         Console.WriteLine($"Finished Salford Mapper");
         return 0;
 

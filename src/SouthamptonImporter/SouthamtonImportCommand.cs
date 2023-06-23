@@ -9,6 +9,7 @@ namespace SouthamptonImporter;
 
 public class SouthamtonImportCommand : IDataInputCommand
 {
+    public IServiceDirectoryMapper? ServiceDirectoryMapper { get; set; }
     public string Name { get => "DataImporter"; }
     public string Description { get => "Imports Southampton Data."; }
 
@@ -39,9 +40,9 @@ public class SouthamtonImportCommand : IDataInputCommand
         IOrganisationClientService organisationClientService = new OrganisationClientService(arg);
 
 
-        SouthamptonMapper southamptonMapper = new SouthamptonMapper(this,southamptonClientService, organisationClientService, southamptonCouncil.AdminAreaCode, southamptonCouncil.Name, southamptonCouncil);
+        ServiceDirectoryMapper = new SouthamptonMapper(this,southamptonClientService, organisationClientService, southamptonCouncil.AdminAreaCode, southamptonCouncil.Name, southamptonCouncil);
 #pragma warning restore S1075 // URIs should not be hardcoded
-        await southamptonMapper.AddOrUpdateServices();
+        await ServiceDirectoryMapper.AddOrUpdateServices();
         Console.WriteLine($"Finished Buckinghamshire Mapper");
 
 

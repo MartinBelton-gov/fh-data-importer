@@ -6,18 +6,17 @@ using System.Web;
 
 namespace SportEngland;
 
-internal class SportEnglandImportMapper : BaseMapper
+internal class SportEnglandImportMapper : BaseMapper, IServiceDirectoryMapper
 {
     public string Name => "Sport England Mapper";
 
     private readonly ISportEnglandClientService _sportEnglandClientService;
     private readonly OrganisationWithServicesDto _sportEngland;
     private readonly IPostCodeCacheLookupService _postCodeCacheLookupService;
-    private readonly IDataInputCommand _dataInputCommand;
+
     public SportEnglandImportMapper(IDataInputCommand dataInputCommand, IPostCodeCacheLookupService postCodeCacheLookupService, ISportEnglandClientService sportEnglandClientService, IOrganisationClientService organisationClientService, string adminAreaCode, string key, OrganisationWithServicesDto parentLA)
         : base(organisationClientService, adminAreaCode, parentLA, key)
     {
-        _dataInputCommand = dataInputCommand;
         _postCodeCacheLookupService = postCodeCacheLookupService;
         _sportEnglandClientService = sportEnglandClientService;
         _sportEngland = parentLA;
@@ -38,8 +37,8 @@ internal class SportEnglandImportMapper : BaseMapper
 
             errors += await AddAndUpdateService(item.data);
         }
-        Console.WriteLine($"Completed Page {currentPage} with {errors} errors");
-        _dataInputCommand.Progress = $"Completed Page {currentPage} with {errors} errors";
+        ProgressUpdate(_sportEngland.Name, $"Completed Page {currentPage} with {errors} errors");
+        
 
         do
         {
@@ -57,12 +56,12 @@ internal class SportEnglandImportMapper : BaseMapper
 
                 errors += await AddAndUpdateService(item.data);
             }
-            Console.WriteLine($"Completed Page {currentPage} with {errors} errors");
+            ProgressUpdate(_sportEngland.Name, $"Completed Page {currentPage} with {errors} errors");
 
         } 
         while (!string.IsNullOrEmpty(sportEnglandModel.next));
 
-        Console.WriteLine("Completed Import");
+        ProgressUpdate(_sportEngland.Name, "Completed Import");
     }
 
     private long GetChangeNumber(string url)
@@ -143,7 +142,7 @@ internal class SportEnglandImportMapper : BaseMapper
 
         foreach (string error in errors)
         {
-            Console.WriteLine(error);
+            ProgressUpdate(_sportEngland.Name, error);
         }
 
         return errors.Count;

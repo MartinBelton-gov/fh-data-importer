@@ -1,6 +1,8 @@
 ﻿using FamilyHubs.DataImporter.Infrastructure;
 using HounslowconnectImporter;
+using Microsoft.AspNetCore.Components.Forms;
 using PlacecubeImporter;
+using static PluginBase.BaseMapper;
 
 namespace FamilyHub.DataImporter.Web.Data;
 
@@ -32,7 +34,7 @@ public class DataImportApiService
         return Task.FromResult(ImportMappers);
     }
 
-    public DataImportTask? StartImport(string name)
+    public DataImportTask? StartImport(string name, UpdateProgress updateProgress)
     {
         if (string.IsNullOrEmpty(name)) 
             return null;
@@ -53,6 +55,11 @@ public class DataImportApiService
 
         importType.DataInputCommand.ApplicationDbContext = _applicationDbContext;
 
+        if (importType.DataInputCommand.ServiceDirectoryMapper != null)
+        {
+            importType.DataInputCommand.ServiceDirectoryMapper.UpdateProgressDelegate = updateProgress;
+        }
+       
         task = new DataImportTask
         {
             ImportType = importType,

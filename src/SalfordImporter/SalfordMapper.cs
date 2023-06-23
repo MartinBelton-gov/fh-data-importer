@@ -9,19 +9,21 @@ using System.Text.Json;
 namespace SalfordImporter;
 
 
-internal class SalfordMapper : BaseMapper
+internal class SalfordMapper : BaseMapper, IServiceDirectoryMapper
 {
     public string Name => "Salford Mapper";
 
     private readonly IDataInputCommand _dataInputCommand;
     private readonly ISalfordClientService _salfordClientService;
     private readonly IPostCodeCacheLookupService _postCodeCacheLookupService;
+    private readonly OrganisationWithServicesDto _parentLA;
     public SalfordMapper(IDataInputCommand dataInputCommand,ISalfordClientService salfordClientService, IOrganisationClientService organisationClientService, IPostCodeCacheLookupService postCodeCacheLookupService, string adminAreaCode, string key, OrganisationWithServicesDto parentLA)
         : base(organisationClientService, adminAreaCode, parentLA, key)
     {
         _dataInputCommand = dataInputCommand;
         _salfordClientService = salfordClientService;
         _postCodeCacheLookupService = postCodeCacheLookupService;
+        _parentLA = parentLA;
     }
 
     public async Task AddOrUpdateServices()
@@ -36,8 +38,8 @@ internal class SalfordMapper : BaseMapper
         {
             recordNumber++;
             errors = await AddAndUpdateService(salfordRecord);
-            Console.WriteLine($"Completed Record {recordNumber} of {totalrecords} with {errors} errors");
-            _dataInputCommand.Progress = $"Completed Record {recordNumber} of {totalrecords} with {errors} errors";
+            ProgressUpdate(_parentLA.Name, $"Completed Record {recordNumber} of {totalrecords} with {errors} errors");
+            
         }
 
         while (recordNumber + 1 < totalrecords)
@@ -55,7 +57,7 @@ internal class SalfordMapper : BaseMapper
             {
                 recordNumber++;
                 errors = await AddAndUpdateService(salfordRecord);
-                Console.WriteLine($"Completed Record {recordNumber} of {totalrecords} with {errors} errors");
+                ProgressUpdate(_parentLA.Name, $"Completed Record {recordNumber} of {totalrecords} with {errors} errors");
             }
         }
     }
@@ -124,7 +126,7 @@ internal class SalfordMapper : BaseMapper
 
         foreach (string error in errors)
         {
-            Console.WriteLine(error);
+            ProgressUpdate(_parentLA.Name, error);
         }
 
         return errors.Count;
@@ -459,7 +461,7 @@ internal class SalfordMapper : BaseMapper
     {
         if (string.IsNullOrEmpty(postCode)) 
         {
-            Console.WriteLine($"Empty postcode return zero lat/long");
+            ProgressUpdate(_parentLA.Name, $"Empty postcode return zero lat/long");
             return (0.0, 0.0);
         }
 

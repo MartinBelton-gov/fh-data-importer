@@ -1,5 +1,6 @@
 ﻿using FamilyHubs.ServiceDirectory.Shared.Dto;
 using FamilyHubs.ServiceDirectory.Shared.Enums;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace PluginBase;
 
@@ -11,7 +12,9 @@ public class BaseMapper
     protected readonly string _adminAreaCode;
     private readonly OrganisationWithServicesDto _parentLA;
     private readonly string _key;
-    public BaseMapper(IOrganisationClientService organisationClientService, string adminAreaCode, OrganisationWithServicesDto parentLA, string key) 
+    public delegate void UpdateProgress(string name, string message);
+    public UpdateProgress? UpdateProgressDelegate { get; set; }
+    protected BaseMapper(IOrganisationClientService organisationClientService, string adminAreaCode, OrganisationWithServicesDto parentLA, string key) 
     { 
         _organisationClientService = organisationClientService;
         _adminAreaCode = adminAreaCode;
@@ -107,6 +110,15 @@ public class BaseMapper
         foreach (var taxonomy in allTaxonomies.Items)
         {
             _dictTaxonomies[taxonomy.Name.ToLower()] = taxonomy;
+        }
+    }
+
+    protected void ProgressUpdate(string name, string message) 
+    {
+        Console.WriteLine(message);
+        if (UpdateProgressDelegate != null)
+        {
+            UpdateProgressDelegate(name, message);
         }
     }
 }

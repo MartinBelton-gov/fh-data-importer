@@ -10,6 +10,7 @@ namespace PlacecubeImporter;
 
 public class PlacecubeImporterCommand : IDataInputCommand
 {
+    public IServiceDirectoryMapper? ServiceDirectoryMapper { get; set; }
     public string Name { get => "DataImporter"; }
     public string Description { get => "Imports Placecube Data."; }
     public ApplicationDbContext? ApplicationDbContext { get; set; }
@@ -89,9 +90,9 @@ public class PlacecubeImporterCommand : IDataInputCommand
             IOrganisationClientService organisationClientService = new OrganisationClientService(arg);
 
 
-            PlacecubeMapper placecubeMapper = new PlacecubeMapper(this, placecubeClientService, organisationClientService, mapper, commandItem.AdminAreaCode, commandItem.Name, commandItem.ParentOrganisation);
+            ServiceDirectoryMapper = new PlacecubeMapper(this, placecubeClientService, organisationClientService, mapper, commandItem.AdminAreaCode, commandItem.Name, commandItem.ParentOrganisation);
 #pragma warning restore S1075 // URIs should not be hardcoded
-            await placecubeMapper.AddOrUpdateServices();
+            await ServiceDirectoryMapper.AddOrUpdateServices();
             Console.WriteLine($"Finished {commandItem.Name} Mapper");
         }
 

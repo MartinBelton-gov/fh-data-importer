@@ -2,16 +2,11 @@
 using FamilyHubs.ServiceDirectory.Shared.Enums;
 using OpenActiveImporter.Services;
 using PluginBase;
-using System.Web;
 
 namespace OpenActiveImporter;
 
-public interface IOpenActiveMapper
-{
-    Task AddOrUpdateServices();
-}
 
-internal class OpenActiveMapper : BaseMapper, IOpenActiveMapper
+internal class OpenActiveMapper : BaseMapper, IServiceDirectoryMapper
 {
     public string Name => "Open Active Mapper";
 

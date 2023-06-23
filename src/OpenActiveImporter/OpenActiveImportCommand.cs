@@ -11,6 +11,7 @@ namespace OpenActiveImporter;
 
 public class OpenActiveImportCommand : IDataInputCommand
 {
+    public IServiceDirectoryMapper? ServiceDirectoryMapper { get; set; }
     public string Name { get => "DataImporter"; }
     public string Description { get => "Imports OpenActive Data Data."; }
     public ApplicationDbContext? ApplicationDbContext { get; set; }
@@ -79,15 +80,15 @@ public class OpenActiveImportCommand : IDataInputCommand
             }
 
             Console.WriteLine($"Starting {commandItem.Name} Mapper");
-            IOpenActiveMapper mapper = CreateMapper(arg, commandItem);
-            await mapper.AddOrUpdateServices();
+            ServiceDirectoryMapper = CreateMapper(arg, commandItem);
+            await ServiceDirectoryMapper.AddOrUpdateServices();
             Console.WriteLine($"Finished {commandItem.Name} Mapper");
         }
 
         return 0;
     }
 
-    private IOpenActiveMapper CreateMapper(string arg, CommandItem commandItem)
+    private IServiceDirectoryMapper CreateMapper(string arg, CommandItem commandItem)
     {
 #pragma warning disable S1075 // URIs should not be hardcoded
         IPostcodeLocationClientService postcodeLocationClientService = new PostcodeLocationClientService("http://api.postcodes.io");
@@ -95,7 +96,7 @@ public class OpenActiveImportCommand : IDataInputCommand
         IOrganisationClientService organisationClientService = new OrganisationClientService(arg);
         IPostCodeCacheLookupService postCodeCacheLookupService = new PostCodeCacheLookupService(postcodeLocationClientService, ApplicationDbContext!);
 
-        IOpenActiveMapper mapper;
+        IServiceDirectoryMapper mapper;
 
         switch (commandItem.ReturnType) 
         {

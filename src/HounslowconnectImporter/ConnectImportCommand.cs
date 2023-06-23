@@ -9,6 +9,8 @@ namespace HounslowconnectImporter;
 
 public class ConnectImportCommand : IDataInputCommand
 {
+    //todo add to other commands so can pass update progress delegate
+    public IServiceDirectoryMapper? ServiceDirectoryMapper { get; set; }
     public string Name { get => "DataImporter"; }
     public string Description { get => "Imports Data."; }
 
@@ -55,15 +57,15 @@ public class ConnectImportCommand : IDataInputCommand
             }
 
             Console.WriteLine($"Starting {commandItem.Name} Mapper");
-            IConnectMapper mapper = CreateMapper(arg, commandItem);
-            await mapper.AddOrUpdateServices();
+            ServiceDirectoryMapper = CreateMapper(arg, commandItem);
+            await ServiceDirectoryMapper.AddOrUpdateServices();
             Console.WriteLine($"Finished {commandItem.Name} Mapper");
         }
 
         return 0;
     }
 
-    private IConnectMapper CreateMapper(string arg, CommandItem commandItem)
+    private IServiceDirectoryMapper CreateMapper(string arg, CommandItem commandItem)
     {
 #pragma warning disable S1075 // URIs should not be hardcoded
         IPostcodeLocationClientService postcodeLocationClientService = new PostcodeLocationClientService("http://api.postcodes.io");
@@ -71,7 +73,7 @@ public class ConnectImportCommand : IDataInputCommand
         IOrganisationClientService organisationClientService = new OrganisationClientService(arg);
         IPostCodeCacheLookupService postCodeCacheLookupService = new PostCodeCacheLookupService(postcodeLocationClientService, ApplicationDbContext!);
 
-        IConnectMapper mapper;
+        IServiceDirectoryMapper mapper;
 
         switch (commandItem.ReturnType)
         {

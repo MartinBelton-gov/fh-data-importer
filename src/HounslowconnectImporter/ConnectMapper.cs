@@ -5,23 +5,16 @@ using PluginBase;
 
 namespace HounslowconnectImporter;
 
-public interface IConnectMapper
-{
-    Task AddOrUpdateServices();
-}
-
-public class ConnectMapper : BaseMapper, IConnectMapper
+public class ConnectMapper : BaseMapper, IServiceDirectoryMapper
 {
     public string Name => "Open Connect Mapper";
 
-    private readonly IDataInputCommand _dataInputCommand;
     private readonly IConnectClientService<ConnectService> _connectClientService;
     private readonly OrganisationWithServicesDto _parentOrganisation;
     private readonly IPostCodeCacheLookupService _postCodeCacheLookupService;
     public ConnectMapper(IDataInputCommand dataInputCommand, IPostCodeCacheLookupService postCodeCacheLookupService, IConnectClientService<ConnectService> connectClientService, IOrganisationClientService organisationClientService, string adminAreaCode, string key, OrganisationWithServicesDto parentLA)
         : base(organisationClientService, adminAreaCode, parentLA, key)
     {
-        _dataInputCommand = dataInputCommand;
         _postCodeCacheLookupService = postCodeCacheLookupService;
         _connectClientService = connectClientService;
         _parentOrganisation = parentLA;
@@ -39,8 +32,8 @@ public class ConnectMapper : BaseMapper, IConnectMapper
         {
             errors += await AddAndUpdateService(item);
         }
-        Console.WriteLine($"Completed Page {currentPage} with {errors} errors");
-        _dataInputCommand.Progress = $"Completed Page {currentPage} with {errors} errors";
+        ProgressUpdate(_parentOrganisation.Name, $"Completed Page {currentPage} with {errors} errors");
+        
 
         do
         {
@@ -58,12 +51,12 @@ public class ConnectMapper : BaseMapper, IConnectMapper
             {               
                 errors += await AddAndUpdateService(item);
             }
-            Console.WriteLine($"Completed Page {currentPage} with {errors} errors");
+            ProgressUpdate(_parentOrganisation.Name, $"Completed Page {currentPage} with {errors} errors");
 
         }
         while (!string.IsNullOrEmpty(connectService.links.next));
 
-        Console.WriteLine("Completed Import");
+        ProgressUpdate(_parentOrganisation.Name, "Completed Import");
     }
 
     public async Task<OtherDetails> GetLocationDetails(string organisationId, string serviceId)
@@ -91,7 +84,7 @@ public class ConnectMapper : BaseMapper, IConnectMapper
         {
             string error = $"Organisation is null for service id: {data.id}";
             errors.Add(error);
-            Console.WriteLine(error);
+            ProgressUpdate(_parentOrganisation.Name, error);
             return errors.Count;
         }
 
@@ -170,7 +163,7 @@ public class ConnectMapper : BaseMapper, IConnectMapper
 
         foreach (string error in errors)
         {
-            Console.WriteLine(error);
+            ProgressUpdate(_parentOrganisation.Name, error);
         }
 
         return errors.Count;

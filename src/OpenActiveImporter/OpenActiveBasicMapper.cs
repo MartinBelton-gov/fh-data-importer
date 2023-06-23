@@ -5,7 +5,7 @@ using PluginBase;
 
 namespace OpenActiveImporter;
 
-internal class OpenActiveBasicMapper : BaseMapper, IOpenActiveMapper
+internal class OpenActiveBasicMapper : BaseMapper, IServiceDirectoryMapper
 {
     public string Name => "Open Active Basic Mapper";
 

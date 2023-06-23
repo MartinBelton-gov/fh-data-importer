@@ -9,6 +9,7 @@ namespace PublicPartnershipImporter;
 
 public class PublicPartnershipImportCommand : IDataInputCommand
 {
+    public IServiceDirectoryMapper? ServiceDirectoryMapper { get; set; }
     public string Name { get => "DataImporter"; }
     public string Description { get => "Imports some other Data."; }
     public string Progress { get; set; } = default!;
@@ -38,10 +39,10 @@ public class PublicPartnershipImportCommand : IDataInputCommand
         IPublicPartnershipClientService publicPartnershipClientService = new PublicPartnershipClientService("https://lgaapi.connecttosupport.org/");
         IOrganisationClientService organisationClientService = new OrganisationClientService(arg);
 
-        PublicPartnershipMapper publicPartnershipMapper = new PublicPartnershipMapper(this, publicPartnershipClientService, organisationClientService, hullCouncil.AdminAreaCode, hullCouncil.Name, hullCouncil);
+        ServiceDirectoryMapper = new PublicPartnershipMapper(this, publicPartnershipClientService, organisationClientService, hullCouncil.AdminAreaCode, hullCouncil.Name, hullCouncil);
         
 #pragma warning restore S1075 // URIs should not be hardcoded
-        await publicPartnershipMapper.AddOrUpdateServices();
+        await ServiceDirectoryMapper.AddOrUpdateServices();
         Console.WriteLine($"Finished Public Partnership Mapper (Hull City)");
         return 0;
     }

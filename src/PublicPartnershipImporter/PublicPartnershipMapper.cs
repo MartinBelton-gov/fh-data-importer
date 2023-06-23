@@ -5,11 +5,13 @@ using PublicPartnershipImporter.Services;
 
 namespace PublicPartnershipImporter;
 
-public class PublicPartnershipMapper : BaseMapper
+public class PublicPartnershipMapper : BaseMapper, IServiceDirectoryMapper
 {
     private readonly IDataInputCommand _dataInputCommand;
     private readonly IPublicPartnershipClientService _publicPartnershipClientService;
-    
+    private readonly OrganisationWithServicesDto _parentLA;
+
+
     public string Name => "PublicPartnership Mapper";
 
     public PublicPartnershipMapper(IDataInputCommand dataInputCommand, IPublicPartnershipClientService publicPartnershipClientService, IOrganisationClientService organisationClientService, string adminAreaCode, string key, OrganisationWithServicesDto parentLA)
@@ -17,6 +19,7 @@ public class PublicPartnershipMapper : BaseMapper
     {
         _dataInputCommand = dataInputCommand;
         _publicPartnershipClientService = publicPartnershipClientService;
+        _parentLA = parentLA;
     }
 
     public async Task AddOrUpdateServices()
@@ -33,8 +36,8 @@ public class PublicPartnershipMapper : BaseMapper
             errorCount += await AddAndUpdateService(content);
         }
 
-        Console.WriteLine($"Completed Page {startPage} of {totalPages} with {errorCount} errors");
-        _dataInputCommand.Progress = $"Completed Page {startPage} of {totalPages} with {errorCount} errors";
+        ProgressUpdate(_parentLA.Name, $"Completed Page {startPage} of {totalPages} with {errorCount} errors");
+        
 
         for (int i = startPage + 1; i <= totalPages; i++)
         {
@@ -45,7 +48,7 @@ public class PublicPartnershipMapper : BaseMapper
                 errorCount += await AddAndUpdateService(content);
             }
 
-            Console.WriteLine($"Completed Page {i} of {totalPages} with {errorCount} errors");
+            ProgressUpdate(_parentLA.Name, $"Completed Page {i} of {totalPages} with {errorCount} errors");
         }
 
     }
@@ -58,7 +61,7 @@ public class PublicPartnershipMapper : BaseMapper
         {
             string error = $"Organisation is null for service id: {content.id}";
             errors.Add(error);
-            Console.WriteLine(error);
+            ProgressUpdate(_parentLA.Name, error);
             return errors.Count;
         }
 
@@ -131,7 +134,7 @@ public class PublicPartnershipMapper : BaseMapper
 
         foreach (string error in errors)
         {
-            Console.WriteLine(error);
+            ProgressUpdate(_parentLA.Name, error);
         }
 
         return errors.Count;

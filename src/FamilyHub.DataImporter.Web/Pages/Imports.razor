@@ -1,5 +1,6 @@
 ﻿@page "/imports"
 @using FamilyHub.DataImporter.Web.Data
+@using static PluginBase.BaseMapper
 @inject DataImportApiService ImportApiService
 
 <h1>Data Imports</h1>
@@ -39,7 +40,9 @@ else
 
 @code {
     private ImportType[]? importTypes;
-    public Dictionary<string, string> Progress = new Dictionary<string, string>(); 
+    public Dictionary<string, string> Progress = new Dictionary<string, string>();
+    
+    
 
     protected override async Task OnInitializedAsync()
     {
@@ -48,28 +51,43 @@ else
 
     private void StartProcess(string name)
     {
-        var taskitem = ImportApiService.StartImport(name);
+        UpdateProgress updateProgress = new UpdateProgress(ShowProgress);
+        var taskitem = ImportApiService.StartImport(name, updateProgress);
         if (taskitem != null)
         {
-            while(taskitem.ItemTask.IsCompleted)
+            //updateProgress = new UpdateProgress(ShowProgress);
+            //todo: https://stackoverflow.com/questions/6169288/execute-specified-function-every-x-seconds
+            /*
+            * async Task RunInBackground(TimeSpan timeSpan, Action action)
             {
-                if (!Progress.ContainsKey(taskitem.ImportType.Name))
-                {
-                    Progress[taskitem.ImportType.Name] = taskitem.ImportType.DataInputCommand.Progress;
+            var periodicTimer = new PeriodicTimer(timeSpan);
+                while (await periodicTimer.WaitForNextTickAsync())
+        {
+        action();
+        }
+        }
 
-                    InvokeAsync(StateHasChanged).ConfigureAwait(false);
-                }
-                else
-                {
-                    if (Progress[taskitem.ImportType.Name] != taskitem.ImportType.DataInputCommand.Progress)
-                    {
-                        Progress[taskitem.ImportType.Name] = taskitem.ImportType.DataInputCommand.Progress;
+        RunInBackground(TimeSpan.FromSeconds(1), () => Console.WriteLine("Printing"));
+            */
+            //while(taskitem.ItemTask.IsCompleted)
+            //{
+            //    if (!Progress.ContainsKey(taskitem.ImportType.Name))
+            //    {
+            //        Progress[taskitem.ImportType.Name] = taskitem.ImportType.DataInputCommand.Progress;
 
-                        InvokeAsync(StateHasChanged).ConfigureAwait(false);
-                    }
-                }
+            //        InvokeAsync(StateHasChanged).ConfigureAwait(false);
+            //    }
+            //    else
+            //    {
+            //        if (Progress[taskitem.ImportType.Name] != taskitem.ImportType.DataInputCommand.Progress)
+            //        {
+            //            Progress[taskitem.ImportType.Name] = taskitem.ImportType.DataInputCommand.Progress;
 
-            };
+            //            InvokeAsync(StateHasChanged).ConfigureAwait(false);
+            //        }
+            //    }
+
+            //};
         }
 
     }
@@ -90,6 +108,20 @@ else
             return Progress[name];
 
         return string.Empty;
+    }
+
+    public void ShowProgress(string name, string message)
+    {
+        if (!Progress.ContainsKey(name))
+        {
+            Progress.Add(name,message);
+        }
+        else
+        {
+            Progress[name] = message;
+        }
+
+        InvokeAsync(StateHasChanged).ConfigureAwait(false);
     }
 }
 

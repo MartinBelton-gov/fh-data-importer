@@ -4,21 +4,22 @@ using FamilyHubs.ServiceDirectory.Shared.Enums;
 using PlacecubeImporter.Services;
 using PluginBase;
 using System.Text;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace PlacecubeImporter;
 
-internal class PlacecubeMapper : BaseMapper
+internal class PlacecubeMapper : BaseMapper, IServiceDirectoryMapper
 {
-    private readonly IDataInputCommand _dataInputCommand;
     private readonly IPlacecubeClientService _placecubeClientService;
-     
-    public string Name => "Placecube Mapper";
+    
 
+    public string Name => "Placecube Mapper";
+    private readonly OrganisationWithServicesDto _parentLA;
     public PlacecubeMapper(IDataInputCommand dataInputCommand, IPlacecubeClientService placecubeClientService, IOrganisationClientService organisationClientService, IMapper mapper, string adminAreaCode, string key, OrganisationWithServicesDto parentLA)
         : base(organisationClientService, adminAreaCode, parentLA, key)
     {
-        _dataInputCommand = dataInputCommand;
         _placecubeClientService = placecubeClientService;
+        _parentLA = parentLA;
     }
 
     public async Task AddOrUpdateServices()
@@ -52,13 +53,12 @@ internal class PlacecubeMapper : BaseMapper
             }
             catch
             {
-                Console.WriteLine($"This is only a simple service id: {itemId}");
-                _dataInputCommand.Progress = $"This is only a simple service id: {itemId}";
+                ProgressUpdate(_parentLA.Name, $"This is only a simple service id: {itemId}");
                 errorCount += await AddAndUpdateSimpleService(elmbridgeSimpleService.content[itemCount]);
             }
         }
 
-        Console.WriteLine($"Completed Page {page} of {totalPages} with {errorCount} errors");
+        ProgressUpdate(_parentLA.Name, $"Completed Page {page} of {totalPages} with {errorCount} errors");
 
     }
 
@@ -71,7 +71,7 @@ internal class PlacecubeMapper : BaseMapper
         {
             string error = $"Organisation is null for service id: {placecubeSimpleService.id}";
             errors.Add(error);
-            Console.WriteLine(error);
+            ProgressUpdate(_parentLA.Name, error);
             return errors.Count;
         }
 
@@ -127,7 +127,7 @@ internal class PlacecubeMapper : BaseMapper
 
         foreach (string error in errors)
         {
-            Console.WriteLine(error);
+            ProgressUpdate(_parentLA.Name, error);
         }
 
         return errors.Count;
@@ -142,7 +142,7 @@ internal class PlacecubeMapper : BaseMapper
         {
             string error = $"Organisation is null for service id: {placecubeService.id}";
             errors.Add(error);
-            Console.WriteLine(error);
+            ProgressUpdate(_parentLA.Name, error);
             return errors.Count;
         }
         
@@ -212,7 +212,7 @@ internal class PlacecubeMapper : BaseMapper
 
         foreach (string error in errors)
         {
-            Console.WriteLine(error);
+            ProgressUpdate(_parentLA.Name, error);
         }
 
         return errors.Count;

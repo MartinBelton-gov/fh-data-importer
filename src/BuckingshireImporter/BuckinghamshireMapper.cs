@@ -5,17 +5,17 @@ using PluginBase;
 
 namespace BuckingshireImporter;
 
-internal class BuckinghamshireMapper : BaseMapper
+internal class BuckinghamshireMapper : BaseMapper, IServiceDirectoryMapper
 {
     public string Name => "Buckinghamshire Mapper";
 
-    private readonly IDataInputCommand _dataInputCommand;
     private readonly IBuckinghamshireClientService _buckinghamshireClientService;
+    private readonly OrganisationWithServicesDto _parentLA;
     public BuckinghamshireMapper(IDataInputCommand dataInputCommand, IBuckinghamshireClientService buckinghamshireClientService, IOrganisationClientService organisationClientService, string adminAreaCode, string key, OrganisationWithServicesDto parentLA)
         : base(organisationClientService, adminAreaCode, parentLA, key)
     {
-        _dataInputCommand = dataInputCommand;
         _buckinghamshireClientService = buckinghamshireClientService;
+        _parentLA = parentLA;
     }
 
     public async Task AddOrUpdateServices()
@@ -30,8 +30,7 @@ internal class BuckinghamshireMapper : BaseMapper
         {
             errors += await AddAndUpdateService(content);
         }
-        Console.WriteLine($"Completed Page {startPage} of {totalPages} with {errors} errors");
-        _dataInputCommand.Progress = $"Completed Page {startPage} of {totalPages} with {errors} errors";
+        ProgressUpdate(_parentLA.Name, $"Completed Page {startPage} of {totalPages} with {errors} errors");
 
         for (int i = startPage + 1; i <= totalPages; i++)
         {
@@ -42,8 +41,7 @@ internal class BuckinghamshireMapper : BaseMapper
             {
                 errors += await AddAndUpdateService(content);
             }
-            Console.WriteLine($"Completed Page {i} of {totalPages} with {errors} errors");
-
+            ProgressUpdate(_parentLA.Name, $"Completed Page {i} of {totalPages} with {errors} errors");
         }
         
     }
@@ -112,7 +110,7 @@ internal class BuckinghamshireMapper : BaseMapper
 
         foreach (string error in errors)
         {
-            Console.WriteLine(error);
+            ProgressUpdate(_parentLA.Name, error);
         }
 
         return errors.Count;

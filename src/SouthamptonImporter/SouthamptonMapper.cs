@@ -5,18 +5,18 @@ using SouthamptonImporter.Services;
 
 namespace SouthamptonImporter;
 
-internal class SouthamptonMapper : BaseMapper
+internal class SouthamptonMapper : BaseMapper, IServiceDirectoryMapper
 {
     private readonly ISouthamptonClientService _southamptonClientService;
-    private readonly IDataInputCommand _dataInputCommand;
+    private readonly OrganisationWithServicesDto _parentLA;
 
     public string Name => "Southampton Mapper";
 
     public SouthamptonMapper(IDataInputCommand dataInputCommand,ISouthamptonClientService southamptonClientService, IOrganisationClientService organisationClientService, string adminAreaCode, string key, OrganisationWithServicesDto parentLA)
         : base(organisationClientService, adminAreaCode, parentLA, key)
     {
-        _dataInputCommand = dataInputCommand;
         _southamptonClientService = southamptonClientService;
+        _parentLA = parentLA;
     }
 
     public async Task AddOrUpdateServices()
@@ -50,13 +50,12 @@ internal class SouthamptonMapper : BaseMapper
             }
             catch
             {
-                Console.WriteLine($"This is only a simple service id: {itemId}");
-                _dataInputCommand.Progress = $"This is only a simple service id: {itemId}";
+                ProgressUpdate(_parentLA.Name, $"This is only a simple service id: {itemId}");
                 errorCount += await AddAndUpdateSimpleService(simpleService.content[itemCount]);
             }
         }
 
-        Console.WriteLine($"Completed Page {page} of {totalPages} with {errorCount} errors");
+        ProgressUpdate(_parentLA.Name, $"Completed Page {page} of {totalPages} with {errorCount} errors");
 
     }
 
@@ -114,7 +113,7 @@ internal class SouthamptonMapper : BaseMapper
 
         foreach (string error in errors)
         {
-            Console.WriteLine(error);
+            ProgressUpdate(_parentLA.Name, error);
         }
 
         return errors.Count;
@@ -188,7 +187,7 @@ internal class SouthamptonMapper : BaseMapper
 
         foreach (string error in errors)
         {
-            Console.WriteLine(error);
+            ProgressUpdate(_parentLA.Name, error);
         }
 
         return errors.Count;
