@@ -3,12 +3,13 @@ using FamilyHubs.DataImporter.Infrastructure;
 using FamilyHubs.ServiceDirectory.Shared.Dto;
 using FamilyHubs.ServiceDirectory.Shared.Enums;
 using PluginBase;
+using static PluginBase.BaseMapper;
 
 namespace BuckingshireImporter
 {
     public class BuckingshireImportCommand : IDataInputCommand
     {
-        public IServiceDirectoryMapper? ServiceDirectoryMapper { get; set; }
+        public UpdateProgress? UpdateProgressDelegate { get; set; }
         public string Name { get => "DataImporter"; }
         public string Description { get => "Imports Buckinghamshire Data."; }
         public ApplicationDbContext? ApplicationDbContext { get; set; }
@@ -41,8 +42,9 @@ namespace BuckingshireImporter
             IOrganisationClientService organisationClientService = new OrganisationClientService(arg);
 
 
-            ServiceDirectoryMapper = new BuckinghamshireMapper(this, buckinghamshireClientService, organisationClientService, buckinghamshireCouncil.AdminAreaCode, buckinghamshireCouncil.Name, buckinghamshireCouncil);
+            IServiceDirectoryMapper ServiceDirectoryMapper = new BuckinghamshireMapper(this, buckinghamshireClientService, organisationClientService, buckinghamshireCouncil.AdminAreaCode, buckinghamshireCouncil.Name, buckinghamshireCouncil);
 #pragma warning restore S1075 // URIs should not be hardcoded
+            ServiceDirectoryMapper.UpdateProgressDelegate = UpdateProgressDelegate;
             await ServiceDirectoryMapper.AddOrUpdateServices();
             Console.WriteLine($"Finished Buckinghamshire Mapper");
 

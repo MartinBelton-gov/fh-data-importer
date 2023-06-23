@@ -3,12 +3,13 @@ using FamilyHubs.ServiceDirectory.Shared.Dto;
 using FamilyHubs.ServiceDirectory.Shared.Enums;
 using PluginBase;
 using SportEngland.Services;
+using static PluginBase.BaseMapper;
 
 namespace SportEngland;
 
 public class SportEnglandImportCommand : IDataInputCommand
 {
-    public IServiceDirectoryMapper? ServiceDirectoryMapper { get; set; }
+    public UpdateProgress? UpdateProgressDelegate { get; set; }
     public string Name { get => "DataImporter"; }
     public string Description { get => "Imports Sport England Data."; }
     public string Progress { get; set; } = default!;
@@ -41,8 +42,9 @@ public class SportEnglandImportCommand : IDataInputCommand
         IPostCodeCacheLookupService postCodeCacheLookupService = new PostCodeCacheLookupService(postcodeLocationClientService, ApplicationDbContext!);
 
 
-        ServiceDirectoryMapper = new SportEnglandImportMapper(this, postCodeCacheLookupService, sportEnglandClientService, organisationClientService, sportEngland.AdminAreaCode, sportEngland.Name, sportEngland);
+        IServiceDirectoryMapper ServiceDirectoryMapper = new SportEnglandImportMapper(this, postCodeCacheLookupService, sportEnglandClientService, organisationClientService, sportEngland.AdminAreaCode, sportEngland.Name, sportEngland);
 #pragma warning restore S1075 // URIs should not be hardcoded
+        ServiceDirectoryMapper.UpdateProgressDelegate = UpdateProgressDelegate;
         await ServiceDirectoryMapper.AddOrUpdateServices();
         Console.WriteLine($"Finished Sport England Mapper");
 

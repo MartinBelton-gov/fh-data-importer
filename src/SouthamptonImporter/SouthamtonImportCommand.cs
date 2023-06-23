@@ -4,12 +4,13 @@ using FamilyHubs.ServiceDirectory.Shared.Enums;
 using Microsoft.Extensions.DependencyInjection;
 using PluginBase;
 using SouthamptonImporter.Services;
+using static PluginBase.BaseMapper;
 
 namespace SouthamptonImporter;
 
 public class SouthamtonImportCommand : IDataInputCommand
 {
-    public IServiceDirectoryMapper? ServiceDirectoryMapper { get; set; }
+    public UpdateProgress? UpdateProgressDelegate { get; set; }
     public string Name { get => "DataImporter"; }
     public string Description { get => "Imports Southampton Data."; }
 
@@ -40,8 +41,9 @@ public class SouthamtonImportCommand : IDataInputCommand
         IOrganisationClientService organisationClientService = new OrganisationClientService(arg);
 
 
-        ServiceDirectoryMapper = new SouthamptonMapper(this,southamptonClientService, organisationClientService, southamptonCouncil.AdminAreaCode, southamptonCouncil.Name, southamptonCouncil);
+        IServiceDirectoryMapper ServiceDirectoryMapper = new SouthamptonMapper(this,southamptonClientService, organisationClientService, southamptonCouncil.AdminAreaCode, southamptonCouncil.Name, southamptonCouncil);
 #pragma warning restore S1075 // URIs should not be hardcoded
+        ServiceDirectoryMapper.UpdateProgressDelegate = UpdateProgressDelegate;
         await ServiceDirectoryMapper.AddOrUpdateServices();
         Console.WriteLine($"Finished Buckinghamshire Mapper");
 

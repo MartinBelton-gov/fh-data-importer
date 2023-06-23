@@ -1,4 +1,5 @@
 ﻿using FamilyHubs.DataImporter.Infrastructure;
+using static PluginBase.BaseMapper;
 
 namespace PluginBase
 {
@@ -7,7 +8,7 @@ namespace PluginBase
         string Name { get; }
         string Description { get; }
         string Progress { get; set; }
-        IServiceDirectoryMapper? ServiceDirectoryMapper { get; set; }
+        UpdateProgress? UpdateProgressDelegate { get; set; }
         public ApplicationDbContext? ApplicationDbContext { get; set; }
 
         Task<int> Execute(string arg, string testOnly);

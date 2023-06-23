@@ -4,6 +4,7 @@ using FamilyHubs.ServiceDirectory.Shared.Enums;
 using Microsoft.Extensions.DependencyInjection;
 using OpenActiveImporter.Services;
 using PluginBase;
+using static PluginBase.BaseMapper;
 
 namespace OpenActiveImporter;
 
@@ -11,7 +12,7 @@ namespace OpenActiveImporter;
 
 public class OpenActiveImportCommand : IDataInputCommand
 {
-    public IServiceDirectoryMapper? ServiceDirectoryMapper { get; set; }
+    public UpdateProgress? UpdateProgressDelegate { get; set; }
     public string Name { get => "DataImporter"; }
     public string Description { get => "Imports OpenActive Data Data."; }
     public ApplicationDbContext? ApplicationDbContext { get; set; }
@@ -80,7 +81,8 @@ public class OpenActiveImportCommand : IDataInputCommand
             }
 
             Console.WriteLine($"Starting {commandItem.Name} Mapper");
-            ServiceDirectoryMapper = CreateMapper(arg, commandItem);
+            IServiceDirectoryMapper ServiceDirectoryMapper = CreateMapper(arg, commandItem);
+            ServiceDirectoryMapper.UpdateProgressDelegate = UpdateProgressDelegate;
             await ServiceDirectoryMapper.AddOrUpdateServices();
             Console.WriteLine($"Finished {commandItem.Name} Mapper");
         }

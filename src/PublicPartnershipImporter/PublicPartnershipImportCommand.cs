@@ -4,12 +4,13 @@ using FamilyHubs.ServiceDirectory.Shared.Enums;
 using Microsoft.Extensions.DependencyInjection;
 using PluginBase;
 using PublicPartnershipImporter.Services;
+using static PluginBase.BaseMapper;
 
 namespace PublicPartnershipImporter;
 
 public class PublicPartnershipImportCommand : IDataInputCommand
 {
-    public IServiceDirectoryMapper? ServiceDirectoryMapper { get; set; }
+    public UpdateProgress? UpdateProgressDelegate { get; set; }
     public string Name { get => "DataImporter"; }
     public string Description { get => "Imports some other Data."; }
     public string Progress { get; set; } = default!;
@@ -39,9 +40,10 @@ public class PublicPartnershipImportCommand : IDataInputCommand
         IPublicPartnershipClientService publicPartnershipClientService = new PublicPartnershipClientService("https://lgaapi.connecttosupport.org/");
         IOrganisationClientService organisationClientService = new OrganisationClientService(arg);
 
-        ServiceDirectoryMapper = new PublicPartnershipMapper(this, publicPartnershipClientService, organisationClientService, hullCouncil.AdminAreaCode, hullCouncil.Name, hullCouncil);
-        
+        IServiceDirectoryMapper ServiceDirectoryMapper = new PublicPartnershipMapper(this, publicPartnershipClientService, organisationClientService, hullCouncil.AdminAreaCode, hullCouncil.Name, hullCouncil);
+
 #pragma warning restore S1075 // URIs should not be hardcoded
+        ServiceDirectoryMapper.UpdateProgressDelegate = UpdateProgressDelegate;
         await ServiceDirectoryMapper.AddOrUpdateServices();
         Console.WriteLine($"Finished Public Partnership Mapper (Hull City)");
         return 0;

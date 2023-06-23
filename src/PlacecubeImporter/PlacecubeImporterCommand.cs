@@ -5,12 +5,13 @@ using FamilyHubs.ServiceDirectory.Shared.Enums;
 using Microsoft.Extensions.DependencyInjection;
 using PlacecubeImporter.Services;
 using PluginBase;
+using static PluginBase.BaseMapper;
 
 namespace PlacecubeImporter;
 
 public class PlacecubeImporterCommand : IDataInputCommand
 {
-    public IServiceDirectoryMapper? ServiceDirectoryMapper { get; set; }
+    public UpdateProgress? UpdateProgressDelegate { get; set; }
     public string Name { get => "DataImporter"; }
     public string Description { get => "Imports Placecube Data."; }
     public ApplicationDbContext? ApplicationDbContext { get; set; }
@@ -90,8 +91,9 @@ public class PlacecubeImporterCommand : IDataInputCommand
             IOrganisationClientService organisationClientService = new OrganisationClientService(arg);
 
 
-            ServiceDirectoryMapper = new PlacecubeMapper(this, placecubeClientService, organisationClientService, mapper, commandItem.AdminAreaCode, commandItem.Name, commandItem.ParentOrganisation);
+            IServiceDirectoryMapper ServiceDirectoryMapper = new PlacecubeMapper(this, placecubeClientService, organisationClientService, mapper, commandItem.AdminAreaCode, commandItem.Name, commandItem.ParentOrganisation);
 #pragma warning restore S1075 // URIs should not be hardcoded
+            ServiceDirectoryMapper.UpdateProgressDelegate = UpdateProgressDelegate;
             await ServiceDirectoryMapper.AddOrUpdateServices();
             Console.WriteLine($"Finished {commandItem.Name} Mapper");
         }

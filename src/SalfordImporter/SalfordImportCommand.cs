@@ -4,13 +4,14 @@ using FamilyHubs.ServiceDirectory.Shared.Enums;
 using Microsoft.Extensions.DependencyInjection;
 using PluginBase;
 using SalfordImporter.Services;
+using static PluginBase.BaseMapper;
 using static System.Formats.Asn1.AsnWriter;
 
 namespace SalfordImporter;
 
 public class SalfordImportCommand : IDataInputCommand
 {
-    public IServiceDirectoryMapper? ServiceDirectoryMapper { get; set; }
+    public UpdateProgress? UpdateProgressDelegate { get; set; }
     public string Name { get => "DataImporter"; }
     public string Description { get => "Imports Buckinghamshire Data."; }
     public string Progress { get; set; } = default!;
@@ -43,8 +44,9 @@ public class SalfordImportCommand : IDataInputCommand
         IPostcodeLocationClientService postcodeLocationClientService = new PostcodeLocationClientService("http://api.postcodes.io");
         IPostCodeCacheLookupService postCodeCacheLookupService = new PostCodeCacheLookupService(postcodeLocationClientService, ApplicationDbContext!);
 
-        ServiceDirectoryMapper = new SalfordMapper(this, salfordClientService, organisationClientService, postCodeCacheLookupService, salfordCouncil.AdminAreaCode, salfordCouncil.Name, salfordCouncil);
+        IServiceDirectoryMapper ServiceDirectoryMapper = new SalfordMapper(this, salfordClientService, organisationClientService, postCodeCacheLookupService, salfordCouncil.AdminAreaCode, salfordCouncil.Name, salfordCouncil);
 #pragma warning restore S1075 // URIs should not be hardcoded
+        ServiceDirectoryMapper.UpdateProgressDelegate = UpdateProgressDelegate;
         await ServiceDirectoryMapper.AddOrUpdateServices();
         Console.WriteLine($"Finished Salford Mapper");
         return 0;

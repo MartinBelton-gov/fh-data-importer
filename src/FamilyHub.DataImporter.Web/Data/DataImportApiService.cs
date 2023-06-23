@@ -54,11 +54,7 @@ public class DataImportApiService
         string servicedirectoryBaseUrl = _configuration["ApplicationServiceApi:ServiceDirectoryUrl"] ?? default!;
 
         importType.DataInputCommand.ApplicationDbContext = _applicationDbContext;
-
-        if (importType.DataInputCommand.ServiceDirectoryMapper != null)
-        {
-            importType.DataInputCommand.ServiceDirectoryMapper.UpdateProgressDelegate = updateProgress;
-        }
+        importType.DataInputCommand.UpdateProgressDelegate = updateProgress;
        
         task = new DataImportTask
         {

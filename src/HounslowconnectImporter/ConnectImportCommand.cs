@@ -3,14 +3,14 @@ using FamilyHubs.ServiceDirectory.Shared.Dto;
 using FamilyHubs.ServiceDirectory.Shared.Enums;
 using HounslowconnectImporter.Services;
 using PluginBase;
+using static PluginBase.BaseMapper;
 
 namespace HounslowconnectImporter;
 
 
 public class ConnectImportCommand : IDataInputCommand
 {
-    //todo add to other commands so can pass update progress delegate
-    public IServiceDirectoryMapper? ServiceDirectoryMapper { get; set; }
+    public UpdateProgress? UpdateProgressDelegate { get; set; }
     public string Name { get => "DataImporter"; }
     public string Description { get => "Imports Data."; }
 
@@ -57,7 +57,8 @@ public class ConnectImportCommand : IDataInputCommand
             }
 
             Console.WriteLine($"Starting {commandItem.Name} Mapper");
-            ServiceDirectoryMapper = CreateMapper(arg, commandItem);
+            IServiceDirectoryMapper ServiceDirectoryMapper = CreateMapper(arg, commandItem);
+            ServiceDirectoryMapper.UpdateProgressDelegate = UpdateProgressDelegate;
             await ServiceDirectoryMapper.AddOrUpdateServices();
             Console.WriteLine($"Finished {commandItem.Name} Mapper");
         }
