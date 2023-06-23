@@ -38,11 +38,17 @@ internal class OpenActiveMapper : BaseMapper, IServiceDirectoryMapper
 
             errors += await AddAndUpdateService(item.data);
         }
-        Console.WriteLine($"Completed Page {currentPage} with {errors} errors");
-        _dataInputCommand.Progress = $"Completed Page {currentPage} with {errors} errors";
+        ProgressUpdate(_parentOrganisation.Name, $"Completed Page {currentPage} with {errors} errors");
 
         do
         {
+            // Check if cancellation is requested
+            if (_dataInputCommand.CancellationTokenSource != null && _dataInputCommand.CancellationTokenSource.IsCancellationRequested)
+            {
+                ProgressUpdate(_parentOrganisation.Name, "Cancelling Mapper Operation");
+                return;
+            }
+
             currentPage++;
             string urlParam = GetUrlParameters(openActiveService.next);
             if (string.IsNullOrEmpty(urlParam))
@@ -60,12 +66,12 @@ internal class OpenActiveMapper : BaseMapper, IServiceDirectoryMapper
 
                 errors += await AddAndUpdateService(item.data);
             }
-            Console.WriteLine($"Completed Page {currentPage} with {errors} errors");
+            ProgressUpdate(_parentOrganisation.Name, $"Completed Page {currentPage} with {errors} errors");
 
         }
         while (!string.IsNullOrEmpty(openActiveService.next));
 
-        Console.WriteLine("Completed Import");
+        ProgressUpdate(_parentOrganisation.Name, "Completed Import");
     }
 
     private string GetUrlParameters(string url)
@@ -158,7 +164,7 @@ internal class OpenActiveMapper : BaseMapper, IServiceDirectoryMapper
 
         foreach (string error in errors)
         {
-            Console.WriteLine(error);
+            ProgressUpdate(_parentOrganisation.Name, error);
         }
 
         return errors.Count;

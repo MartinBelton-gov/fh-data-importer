@@ -9,12 +9,14 @@ internal class OpenActiveBasicMapper : BaseMapper, IServiceDirectoryMapper
 {
     public string Name => "Open Active Basic Mapper";
 
+    private readonly IDataInputCommand _dataInputCommand;
     private readonly IOpenActiveClientService<OpenActiveBasicService> _openActiveClientService;
     private readonly OrganisationWithServicesDto _parentOrganisation;
     private readonly IPostCodeCacheLookupService _postCodeCacheLookupService;
-    public OpenActiveBasicMapper(IPostCodeCacheLookupService postCodeCacheLookupService, IOpenActiveClientService<OpenActiveBasicService> openActiveClientService, IOrganisationClientService organisationClientService, string adminAreaCode, string key, OrganisationWithServicesDto parentLA)
+    public OpenActiveBasicMapper(IDataInputCommand dataInputCommand, IPostCodeCacheLookupService postCodeCacheLookupService, IOpenActiveClientService<OpenActiveBasicService> openActiveClientService, IOrganisationClientService organisationClientService, string adminAreaCode, string key, OrganisationWithServicesDto parentLA)
         : base(organisationClientService, adminAreaCode, parentLA, key)
     {
+        _dataInputCommand = dataInputCommand;
         _postCodeCacheLookupService = postCodeCacheLookupService;
         _openActiveClientService = openActiveClientService;
         _parentOrganisation = parentLA;
@@ -39,6 +41,13 @@ internal class OpenActiveBasicMapper : BaseMapper, IServiceDirectoryMapper
 
         do
         {
+            // Check if cancellation is requested
+            if (_dataInputCommand.CancellationTokenSource != null && _dataInputCommand.CancellationTokenSource.IsCancellationRequested)
+            {
+                ProgressUpdate(_parentOrganisation.Name, "Cancelling Mapper Operation");
+                return;
+            }
+
             currentPage++;
             string urlParam = GetUrlParameters(openActiveService.next);
             if (string.IsNullOrEmpty(urlParam))
@@ -194,23 +203,6 @@ internal class OpenActiveBasicMapper : BaseMapper, IServiceDirectoryMapper
                 newEligibility.EligibilityType = EligibilityType.Child;
 
             listEligibilities.Add(newEligibility);
-
-            //bool added = false;
-            //if (existingService != null)
-            //{
-            //    EligibilityDto? existingItem = existingService.Eligibilities.FirstOrDefault(x => x.Equals(newEligibility));
-
-            //    if (existingItem != null)
-            //    {
-            //        listEligibilities.Add(existingItem);
-            //        added = true;
-            //    }
-            //}
-
-            //if (!added)
-            //{
-            //    listEligibilities.Add(newEligibility);
-            //}
         }
 
         return listEligibilities;

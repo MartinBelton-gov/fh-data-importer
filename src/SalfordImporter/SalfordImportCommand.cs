@@ -11,10 +11,10 @@ namespace SalfordImporter;
 
 public class SalfordImportCommand : IDataInputCommand
 {
+    public CancellationTokenSource? CancellationTokenSource { get; set; }
     public UpdateProgress? UpdateProgressDelegate { get; set; }
     public string Name { get => "DataImporter"; }
     public string Description { get => "Imports Buckinghamshire Data."; }
-    public string Progress { get; set; } = default!;
 
     public ApplicationDbContext? ApplicationDbContext { get; set; }
 

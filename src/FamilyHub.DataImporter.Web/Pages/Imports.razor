@@ -29,8 +29,8 @@ else
                 <tr>
                     <td>@importType.Name</td>
                     <td>@importType.Supplier</td>
-                    <td><button class="btn btn-primary" disabled="@IsDisabled(importType.Name)" @onclick="@(e => StartProcess(importType.Name))">Start</button></td>
-                    <td><button class="btn btn-primary" disabled="!@IsDisabled(importType.Name)" @onclick="@(e => StopProcess(importType.Name))">Stop</button></td>
+                    <td><button class="btn btn-primary" disabled="@IsStartDisabled(importType.Name)" @onclick="@(e => StartProcess(importType.Name))">Start</button></td>
+                    <td><button class="btn btn-primary" disabled="@IsStopDisabled(importType.Name)" @onclick="@(e => StopProcess(importType.Name))">Stop</button></td>
                     <td>@GetProgress(importType.Name)</td>
                 </tr>
             }
@@ -41,8 +41,8 @@ else
 @code {
     private ImportType[]? importTypes;
     public Dictionary<string, string> Progress = new Dictionary<string, string>();
-    
-    
+
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -52,7 +52,13 @@ else
     private void StartProcess(string name)
     {
         UpdateProgress updateProgress = new UpdateProgress(ShowProgress);
-        var taskitem = ImportApiService.StartImport(name, updateProgress);
+        var taskitem = ImportApiService.StartImport(name, updateProgress, this);
+        InvokeAsync(StateHasChanged).ConfigureAwait(false);
+    }
+
+    public async Task StatusChanged()
+    {
+        await InvokeAsync(StateHasChanged);
     }
 
     private void StopProcess(string name)
@@ -60,9 +66,14 @@ else
         ImportApiService.StopImport(name);
     }
 
-    private bool IsDisabled(string name)
+    private bool IsStartDisabled(string name)
     {
         return ImportApiService.IsTaskRunning(name);
+    }
+
+    private bool IsStopDisabled(string name)
+    {
+        return !ImportApiService.IsTaskRunning(name);
     }
 
     private string GetProgress(string name)

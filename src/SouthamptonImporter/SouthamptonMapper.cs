@@ -7,6 +7,7 @@ namespace SouthamptonImporter;
 
 internal class SouthamptonMapper : BaseMapper, IServiceDirectoryMapper
 {
+    private readonly IDataInputCommand _dataInputCommand;
     private readonly ISouthamptonClientService _southamptonClientService;
     private readonly OrganisationWithServicesDto _parentLA;
 
@@ -15,6 +16,7 @@ internal class SouthamptonMapper : BaseMapper, IServiceDirectoryMapper
     public SouthamptonMapper(IDataInputCommand dataInputCommand,ISouthamptonClientService southamptonClientService, IOrganisationClientService organisationClientService, string adminAreaCode, string key, OrganisationWithServicesDto parentLA)
         : base(organisationClientService, adminAreaCode, parentLA, key)
     {
+        _dataInputCommand = dataInputCommand;
         _southamptonClientService = southamptonClientService;
         _parentLA = parentLA;
     }
@@ -31,6 +33,12 @@ internal class SouthamptonMapper : BaseMapper, IServiceDirectoryMapper
 
         for (int i = startPage + 1; i <= totalPages; i++)
         {
+            // Check if cancellation is requested
+            if (_dataInputCommand.CancellationTokenSource != null && _dataInputCommand.CancellationTokenSource.IsCancellationRequested)
+            {
+                ProgressUpdate(_parentLA.Name, "Cancelling Mapper Operation");
+                return;
+            }
             await LoopSimpleServices(i, totalPages);
         }
     }

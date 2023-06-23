@@ -9,10 +9,10 @@ namespace SportEngland;
 
 public class SportEnglandImportCommand : IDataInputCommand
 {
+    public CancellationTokenSource? CancellationTokenSource { get; set; }
     public UpdateProgress? UpdateProgressDelegate { get; set; }
     public string Name { get => "DataImporter"; }
     public string Description { get => "Imports Sport England Data."; }
-    public string Progress { get; set; } = default!;
     public ApplicationDbContext? ApplicationDbContext { get; set; }
 
     public async Task<int> Execute(string arg, string testOnly)

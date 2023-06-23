@@ -1,4 +1,5 @@
-﻿using FamilyHubs.DataImporter.Infrastructure;
+﻿using FamilyHub.DataImporter.Web.Pages;
+using FamilyHubs.DataImporter.Infrastructure;
 using HounslowconnectImporter;
 using PlacecubeImporter;
 using static PluginBase.BaseMapper;
@@ -33,7 +34,7 @@ public class DataImportApiService
         return Task.FromResult(ImportMappers);
     }
 
-    public DataImportTask? StartImport(string name, UpdateProgress updateProgress)
+    public DataImportTask? StartImport(string name, UpdateProgress updateProgress, Imports imports)
     {
         if (string.IsNullOrEmpty(name)) 
             return null;
@@ -54,17 +55,21 @@ public class DataImportApiService
 
         importType.DataInputCommand.ApplicationDbContext = _applicationDbContext;
         importType.DataInputCommand.UpdateProgressDelegate = updateProgress;
-       
+        importType.DataInputCommand.CancellationTokenSource = new CancellationTokenSource();
+
         task = new DataImportTask
         {
             ImportType = importType,
-            CancellationTokenSource = new CancellationTokenSource()
         };
+
+        task.ImportType.DataInputCommand.CancellationTokenSource = new CancellationTokenSource();
 
         task.ItemTask = importType.DataInputCommand.Execute(servicedirectoryBaseUrl, importType.Name)
             .ContinueWith(t =>
             {
                 RunningTasks.Remove(task);
+                task.ImportType.DataInputCommand.CancellationTokenSource.Dispose();
+                imports.StatusChanged().ConfigureAwait(false);
             });
 
         RunningTasks.Add(task);
@@ -81,9 +86,8 @@ public class DataImportApiService
         }
 
         // Cancel the task
-        task.CancellationTokenSource.Cancel();
-        task.ItemTask.Wait();
-        task.CancellationTokenSource.Dispose();
+        if (task.ImportType.DataInputCommand.CancellationTokenSource != null)
+            task.ImportType.DataInputCommand.CancellationTokenSource.Cancel();
     }
 
     public bool IsTaskRunning(string name)

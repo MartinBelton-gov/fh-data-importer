@@ -1,7 +1,9 @@
 ﻿using BuckingshireImporter.Services;
 using FamilyHubs.ServiceDirectory.Shared.Dto;
 using FamilyHubs.ServiceDirectory.Shared.Enums;
+using Newtonsoft.Json.Linq;
 using PluginBase;
+using System.Threading;
 
 namespace BuckingshireImporter;
 
@@ -9,11 +11,13 @@ internal class BuckinghamshireMapper : BaseMapper, IServiceDirectoryMapper
 {
     public string Name => "Buckinghamshire Mapper";
 
+    private readonly IDataInputCommand _dataInputCommand;
     private readonly IBuckinghamshireClientService _buckinghamshireClientService;
     private readonly OrganisationWithServicesDto _parentLA;
     public BuckinghamshireMapper(IDataInputCommand dataInputCommand, IBuckinghamshireClientService buckinghamshireClientService, IOrganisationClientService organisationClientService, string adminAreaCode, string key, OrganisationWithServicesDto parentLA)
         : base(organisationClientService, adminAreaCode, parentLA, key)
     {
+        _dataInputCommand = dataInputCommand;
         _buckinghamshireClientService = buckinghamshireClientService;
         _parentLA = parentLA;
     }
@@ -26,7 +30,7 @@ internal class BuckinghamshireMapper : BaseMapper, IServiceDirectoryMapper
         await CreateTaxonomyDictionary();
         BuckinghapshireService buckinghapshireService = await _buckinghamshireClientService.GetServicesByPage(startPage);
         int totalPages = buckinghapshireService.totalPages;
-        foreach(var content in buckinghapshireService.content)
+        foreach (var content in buckinghapshireService.content)
         {
             errors += await AddAndUpdateService(content);
         }
@@ -34,16 +38,25 @@ internal class BuckinghamshireMapper : BaseMapper, IServiceDirectoryMapper
 
         for (int i = startPage + 1; i <= totalPages; i++)
         {
+            // Check if cancellation is requested
+            if (_dataInputCommand.CancellationTokenSource != null && _dataInputCommand.CancellationTokenSource.IsCancellationRequested)
+            {
+                ProgressUpdate(_parentLA.Name, "Cancelling Mapper Operation");
+                return;
+            }
+
             errors = 0;
             buckinghapshireService = await _buckinghamshireClientService.GetServicesByPage(i);
-            
+
             foreach (var content in buckinghapshireService.content)
             {
                 errors += await AddAndUpdateService(content);
             }
             ProgressUpdate(_parentLA.Name, $"Completed Page {i} of {totalPages} with {errors} errors");
         }
+
         
+
     }
 
     private async Task<int> AddAndUpdateService(Content content)

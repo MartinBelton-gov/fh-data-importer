@@ -10,6 +10,7 @@ internal class SportEnglandImportMapper : BaseMapper, IServiceDirectoryMapper
 {
     public string Name => "Sport England Mapper";
 
+    private readonly IDataInputCommand _dataInputCommand;
     private readonly ISportEnglandClientService _sportEnglandClientService;
     private readonly OrganisationWithServicesDto _sportEngland;
     private readonly IPostCodeCacheLookupService _postCodeCacheLookupService;
@@ -17,6 +18,7 @@ internal class SportEnglandImportMapper : BaseMapper, IServiceDirectoryMapper
     public SportEnglandImportMapper(IDataInputCommand dataInputCommand, IPostCodeCacheLookupService postCodeCacheLookupService, ISportEnglandClientService sportEnglandClientService, IOrganisationClientService organisationClientService, string adminAreaCode, string key, OrganisationWithServicesDto parentLA)
         : base(organisationClientService, adminAreaCode, parentLA, key)
     {
+        _dataInputCommand = dataInputCommand;
         _postCodeCacheLookupService = postCodeCacheLookupService;
         _sportEnglandClientService = sportEnglandClientService;
         _sportEngland = parentLA;
@@ -42,6 +44,12 @@ internal class SportEnglandImportMapper : BaseMapper, IServiceDirectoryMapper
 
         do
         {
+            // Check if cancellation is requested
+            if (_dataInputCommand.CancellationTokenSource != null && _dataInputCommand.CancellationTokenSource.IsCancellationRequested)
+            {
+                ProgressUpdate(_sportEngland.Name, "Cancelling Mapper Operation");
+                return;
+            }
             currentPage++;
             long changeNumber = GetChangeNumber(sportEnglandModel.next);
             if (changeNumber <= 0)

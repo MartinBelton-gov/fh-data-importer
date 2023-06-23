@@ -44,6 +44,13 @@ internal class SalfordMapper : BaseMapper, IServiceDirectoryMapper
 
         while (recordNumber + 1 < totalrecords)
         {
+            // Check if cancellation is requested
+            if (_dataInputCommand.CancellationTokenSource != null && _dataInputCommand.CancellationTokenSource.IsCancellationRequested)
+            {
+                ProgressUpdate(_parentLA.Name, "Cancelling Mapper Operation");
+                return;
+            }
+
             if ((recordNumber + 100) < totalrecords)
             {
                 salfordService = await _salfordClientService.GetServices(recordNumber + 1, 100);

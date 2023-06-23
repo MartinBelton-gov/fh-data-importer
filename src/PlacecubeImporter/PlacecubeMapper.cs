@@ -11,13 +11,14 @@ namespace PlacecubeImporter;
 internal class PlacecubeMapper : BaseMapper, IServiceDirectoryMapper
 {
     private readonly IPlacecubeClientService _placecubeClientService;
-    
+    private readonly IDataInputCommand _dataInputCommand;
 
     public string Name => "Placecube Mapper";
     private readonly OrganisationWithServicesDto _parentLA;
     public PlacecubeMapper(IDataInputCommand dataInputCommand, IPlacecubeClientService placecubeClientService, IOrganisationClientService organisationClientService, IMapper mapper, string adminAreaCode, string key, OrganisationWithServicesDto parentLA)
         : base(organisationClientService, adminAreaCode, parentLA, key)
     {
+        _dataInputCommand = dataInputCommand;
         _placecubeClientService = placecubeClientService;
         _parentLA = parentLA;
     }
@@ -34,6 +35,13 @@ internal class PlacecubeMapper : BaseMapper, IServiceDirectoryMapper
 
         for (int i = startPage + 1; i <= totalPages; i++)
         {
+            // Check if cancellation is requested
+            if (_dataInputCommand.CancellationTokenSource != null && _dataInputCommand.CancellationTokenSource.IsCancellationRequested)
+            {
+                ProgressUpdate(_parentLA.Name, "Cancelling Mapper Operation");
+                return;
+            }
+
             await LoopSimpleServices(i, totalPages);
         }
     }

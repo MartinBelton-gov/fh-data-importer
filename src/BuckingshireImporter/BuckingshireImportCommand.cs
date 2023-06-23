@@ -9,11 +9,12 @@ namespace BuckingshireImporter
 {
     public class BuckingshireImportCommand : IDataInputCommand
     {
+        public CancellationTokenSource? CancellationTokenSource { get; set; }
         public UpdateProgress? UpdateProgressDelegate { get; set; }
         public string Name { get => "DataImporter"; }
         public string Description { get => "Imports Buckinghamshire Data."; }
         public ApplicationDbContext? ApplicationDbContext { get; set; }
-        public string Progress { get; set; } = default!;
+        
 
         public async Task<int> Execute(string arg, string testOnly)
         {

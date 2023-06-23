@@ -10,10 +10,10 @@ namespace PublicPartnershipImporter;
 
 public class PublicPartnershipImportCommand : IDataInputCommand
 {
+    public CancellationTokenSource? CancellationTokenSource { get; set; }
     public UpdateProgress? UpdateProgressDelegate { get; set; }
     public string Name { get => "DataImporter"; }
     public string Description { get => "Imports some other Data."; }
-    public string Progress { get; set; } = default!;
     public ApplicationDbContext? ApplicationDbContext { get; set; }
 
     public async Task<int> Execute(string arg, string testOnly)

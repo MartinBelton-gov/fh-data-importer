@@ -10,11 +10,10 @@ namespace SouthamptonImporter;
 
 public class SouthamtonImportCommand : IDataInputCommand
 {
+    public CancellationTokenSource? CancellationTokenSource { get; set; }
     public UpdateProgress? UpdateProgressDelegate { get; set; }
     public string Name { get => "DataImporter"; }
     public string Description { get => "Imports Southampton Data."; }
-
-    public string Progress { get; set; } = default!;
     public ApplicationDbContext? ApplicationDbContext { get; set; }
     public async Task<int> Execute(string arg, string testOnly)
     {

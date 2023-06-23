@@ -41,6 +41,13 @@ public class PublicPartnershipMapper : BaseMapper, IServiceDirectoryMapper
 
         for (int i = startPage + 1; i <= totalPages; i++)
         {
+            // Check if cancellation is requested
+            if (_dataInputCommand.CancellationTokenSource != null && _dataInputCommand.CancellationTokenSource.IsCancellationRequested)
+            {
+                ProgressUpdate(_parentLA.Name, "Cancelling Mapper Operation");
+                return;
+            }
+
             publicpartnershipSimpleService = await _publicPartnershipClientService.GetServicesByPage(i);
 
             foreach (Content content in publicpartnershipSimpleService.content)

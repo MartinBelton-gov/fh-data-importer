@@ -12,11 +12,11 @@ namespace OpenActiveImporter;
 
 public class OpenActiveImportCommand : IDataInputCommand
 {
+    public CancellationTokenSource? CancellationTokenSource { get; set; }
     public UpdateProgress? UpdateProgressDelegate { get; set; }
     public string Name { get => "DataImporter"; }
     public string Description { get => "Imports OpenActive Data Data."; }
     public ApplicationDbContext? ApplicationDbContext { get; set; }
-    public string Progress { get; set; } = default!;
 
     public async Task<int> Execute(string arg, string testOnly)
     {
@@ -112,7 +112,7 @@ public class OpenActiveImportCommand : IDataInputCommand
             default:
                 {
                     IOpenActiveClientService<OpenActiveBasicService> openActiveClientService = new OpenActiveClientService<OpenActiveBasicService>(commandItem.BaseUrl);
-                    mapper = new OpenActiveBasicMapper(postCodeCacheLookupService, openActiveClientService, organisationClientService, commandItem.AdminAreaCode, commandItem.Name, commandItem.ParentOrganisation);
+                    mapper = new OpenActiveBasicMapper(this, postCodeCacheLookupService, openActiveClientService, organisationClientService, commandItem.AdminAreaCode, commandItem.Name, commandItem.ParentOrganisation);
                 }
                 break;
         }

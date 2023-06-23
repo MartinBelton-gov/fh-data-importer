@@ -7,7 +7,7 @@ namespace PluginBase
     {
         string Name { get; }
         string Description { get; }
-        string Progress { get; set; }
+        public CancellationTokenSource? CancellationTokenSource { get; set; }
         UpdateProgress? UpdateProgressDelegate { get; set; }
         public ApplicationDbContext? ApplicationDbContext { get; set; }
 

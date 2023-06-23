@@ -9,12 +9,14 @@ public class ConnectMapper : BaseMapper, IServiceDirectoryMapper
 {
     public string Name => "Open Connect Mapper";
 
+    private readonly IDataInputCommand _dataInputCommand;
     private readonly IConnectClientService<ConnectService> _connectClientService;
     private readonly OrganisationWithServicesDto _parentOrganisation;
     private readonly IPostCodeCacheLookupService _postCodeCacheLookupService;
     public ConnectMapper(IDataInputCommand dataInputCommand, IPostCodeCacheLookupService postCodeCacheLookupService, IConnectClientService<ConnectService> connectClientService, IOrganisationClientService organisationClientService, string adminAreaCode, string key, OrganisationWithServicesDto parentLA)
         : base(organisationClientService, adminAreaCode, parentLA, key)
     {
+        _dataInputCommand = dataInputCommand;
         _postCodeCacheLookupService = postCodeCacheLookupService;
         _connectClientService = connectClientService;
         _parentOrganisation = parentLA;
@@ -37,6 +39,13 @@ public class ConnectMapper : BaseMapper, IServiceDirectoryMapper
 
         do
         {
+            // Check if cancellation is requested
+            if (_dataInputCommand.CancellationTokenSource != null && _dataInputCommand.CancellationTokenSource.IsCancellationRequested)
+            {
+                ProgressUpdate(_parentOrganisation.Name, "Cancelling Mapper Operation");
+                return;
+            }
+
             currentPage++;
             string urlParam = GetUrlParameters(connectService.links.next);
             if (string.IsNullOrEmpty(urlParam))
