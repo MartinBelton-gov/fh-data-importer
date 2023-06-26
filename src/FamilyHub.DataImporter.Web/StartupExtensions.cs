@@ -43,7 +43,7 @@ public static class StartupExtensions
 
         services.RegisterAppDbContext(configuration);
 
-        services.AddTransient<DataImportApiService>();
+        services.AddTransient<IDataImportApiService, DataImportApiService>();
     }
 
     public static IServiceCollection RegisterAppDbContext(this IServiceCollection services, IConfiguration configuration)

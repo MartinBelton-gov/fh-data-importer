@@ -6,7 +6,7 @@ using static PluginBase.BaseMapper;
 
 namespace FamilyHub.DataImporter.Web.Data;
 
-public class DataImportApiService
+public class DataImportApiService : IDataImportApiService
 {
     private static List<DataImportTask> _runningTasks = new List<DataImportTask>();
     public static List<DataImportTask> RunningTasks { get { return _runningTasks; } }
@@ -36,7 +36,7 @@ public class DataImportApiService
 
     public DataImportTask? StartImport(string name, UpdateProgress updateProgress, Imports imports)
     {
-        if (string.IsNullOrEmpty(name)) 
+        if (string.IsNullOrEmpty(name))
             return null;
 
         ImportType? importType = ImportMappers.FirstOrDefault(x => x.Name == name);
@@ -95,7 +95,7 @@ public class DataImportApiService
         var runningTask = RunningTasks.FirstOrDefault(x => x.ImportType.Name == name);
         if (runningTask != null)
             return true;
-        
+
         return false;
     }
 }
