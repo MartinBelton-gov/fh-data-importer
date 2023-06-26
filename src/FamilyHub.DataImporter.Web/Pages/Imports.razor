@@ -13,6 +13,11 @@
 }
 else
 {
+    <div class="form-group">
+        <input class="form-control" type="text" placeholder="Filter..."
+        @bind="Filter"
+        @bind:event="oninput">
+    </div>
     <table class="table">
         <thead>
             <tr>
@@ -26,6 +31,9 @@ else
         <tbody>
             @foreach (var importType in importTypes)
             {
+                if (!IsVisible(importType))
+                    continue;
+
                 <tr>
                     <td>@importType.Name</td>
                     <td>@importType.Supplier</td>
@@ -39,10 +47,20 @@ else
 }
 
 @code {
+    public string? Filter { get; set; }
     private ImportType[]? importTypes;
     public Dictionary<string, string> Progress = new Dictionary<string, string>();
 
+    public bool IsVisible(ImportType? importType)
+    {
+        if (string.IsNullOrEmpty(Filter) || importType == null)
+            return true;
 
+        if (importType.Name.Contains(Filter, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        return false;
+    }
 
     protected override async Task OnInitializedAsync()
     {
