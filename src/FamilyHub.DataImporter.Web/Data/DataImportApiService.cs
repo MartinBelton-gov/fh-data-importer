@@ -1,7 +1,13 @@
-﻿using FamilyHub.DataImporter.Web.Pages;
+﻿using BuckingshireImporter;
+using FamilyHub.DataImporter.Web.Pages;
 using FamilyHubs.DataImporter.Infrastructure;
 using HounslowconnectImporter;
+using OpenActiveImporter;
 using PlacecubeImporter;
+using PublicPartnershipImporter;
+using SalfordImporter;
+using SouthamptonImporter;
+using SportEngland;
 using static PluginBase.BaseMapper;
 
 namespace FamilyHub.DataImporter.Web.Data;
@@ -19,6 +25,14 @@ public class DataImportApiService : IDataImportApiService
         new ImportType{ Name = "Pennine Lancashire", Supplier = "Placecube", DataInputCommand = new PlacecubeImporterCommand() },
         new ImportType{ Name = "London Borough of Hounslow", Supplier = "Ayup", DataInputCommand = new ConnectImportCommand() },
         new ImportType{ Name = "London Borough of Sutton", Supplier = "Ayup", DataInputCommand = new ConnectImportCommand() },
+        new ImportType{ Name = "Buckingshire Council", Supplier = "FutureGov", DataInputCommand = new BuckingshireImportCommand() },
+        new ImportType{ Name = "Salford City Council", Supplier = "Open Objects", DataInputCommand = new SalfordImportCommand() },
+        new ImportType{ Name = "Southampton City Council", Supplier = "Etch UK", DataInputCommand = new SouthamtonImportCommand() },
+        new ImportType{ Name = "Active Tameside", Supplier = "Open Active / Imin / ORUK", DataInputCommand = new OpenActiveImportCommand() },
+        new ImportType{ Name = "LED Leisure Management Ltd", Supplier = "Open Active", DataInputCommand = new OpenActiveImportCommand() },
+        new ImportType{ Name = "BwD Leisure", Supplier = "Open Active / Imin / ORUK", DataInputCommand = new OpenActiveImportCommand() },
+        new ImportType{ Name = "Sport England", Supplier = "Open Active / Imin / ORUK", DataInputCommand = new SportEnglandImportCommand() },
+        new ImportType{ Name = "Hull City Council", Supplier = "Public Partnership", DataInputCommand = new PublicPartnershipImportCommand() },
     };
 
     private readonly IConfiguration _configuration;
